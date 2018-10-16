@@ -11,32 +11,32 @@ public interface PostingService {
 
     /**
      * Creates a new Posting.
-     * <p>
+     *
      * - If there is another posting with the same operation id
      * - The new posting can only be stored is the oldest is not part of a closed accounting period.
      * - A posting time can not be older than a closed accounting period.
      *
-     * @param posting
-     * @return
-     * @throws NotFoundException
+     * @param posting posting object to be persisted
+     * @return Posting
+     * @throws NotFoundException if posting can not be persisted the exception is thrown
      */
     Posting newPosting(Posting posting) throws NotFoundException;
 
     /**
      * Listing all postings associated with this operation id.
      *
-     * @param oprId
-     * @return
+     * @param oprId operation ID associated with posting(s)
+     * @return Posting
      */
     List<Posting> findPostingsByOperationId(String oprId);
 
     /**
      * Compute the balance of a ledger account.
      *
-     * @param ledgerAccount : the ledger account for which the balance shal be computed.
+     * @param ledgerAccount : the ledger account for which the balance shall be computed.
      * @param refTime       the time at which this balance has to be computed.
-     * @return
-     * @throws NotFoundException
+     * @return Posting
+     * @throws NotFoundException If balance can not be computed, exception is thrown
      */
     Posting balanceTx(LedgerAccount ledgerAccount, LocalDateTime refTime) throws NotFoundException;
 }

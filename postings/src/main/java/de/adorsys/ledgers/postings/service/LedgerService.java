@@ -16,9 +16,9 @@ public interface LedgerService {
     /**
      * Creates a new Ledger.
      *
-     * @param ledger
-     * @return
-     * @throws NotFoundException
+     * @param ledger ledger to be persisted
+     * @return Ledger
+     * @throws NotFoundException if ledger can not be persisted exception is thrown
      */
     Ledger newLedger(Ledger ledger) throws NotFoundException;
 
@@ -27,8 +27,8 @@ public interface LedgerService {
     /**
      * List all ledgers with the given name. These are generally different versions of the same ledger.
      *
-     * @param name
-     * @return
+     * @param name ledger name
+     * @return Ledger
      */
     Optional<Ledger> findLedgerByName(String name);
 
@@ -37,9 +37,9 @@ public interface LedgerService {
      * <p>
      * While creating a ledger account, the parent hat to be specified.
      *
-     * @param ledgerAccount
-     * @return
-     * @throws NotFoundException
+     * @param ledgerAccount ledger account
+     * @return LedgerAccount
+     * @throws NotFoundException if ledger account can not be persisted exception is thrown
      */
     LedgerAccount newLedgerAccount(LedgerAccount ledgerAccount) throws NotFoundException;
 
@@ -48,8 +48,8 @@ public interface LedgerService {
     /**
      * Find the ledger account with the given name
      *
-     * @param name
-     * @return
+     * @param name ledger account name
+     * @return LedgerAccount
      */
     Optional<LedgerAccount> findLedgerAccount(Ledger ledger, String name);
 }

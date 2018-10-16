@@ -12,15 +12,15 @@ import de.adorsys.ledgers.postings.domain.ChartOfAccount;
 public interface ChartOfAccountService {
 
     /**
-     * @param chartOfAccount
-     * @return
+     * @param chartOfAccount chart of accounts to be persisted
+     * @return ChartOfAccount
      */
     ChartOfAccount newChartOfAccount(ChartOfAccount chartOfAccount);
 
     /**
      * List all chart of accounts with the given name. These are generally different versions of the same chart of account.
      *
-     * @param name
+     * @param name chart of accounts name
      * @return an empty list if no chart of account with the given name.
      */
     Optional<ChartOfAccount> findChartOfAccountsByName(String name);
