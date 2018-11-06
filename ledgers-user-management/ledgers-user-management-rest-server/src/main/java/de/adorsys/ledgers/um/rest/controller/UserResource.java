@@ -21,6 +21,7 @@ import de.adorsys.ledgers.um.api.exception.UserAlreadyExistsException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
 import de.adorsys.ledgers.um.rest.converter.UserTOConverter;
+import de.adorsys.ledgers.um.rest.domain.AccountAccessTO;
 import de.adorsys.ledgers.um.rest.domain.UserTO;
 import de.adorsys.ledgers.um.rest.exception.NotFoundRestException;
 
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping(UserResource.USERS)
@@ -63,4 +65,18 @@ public class UserResource {
             throw new NotFoundRestException(e.getMessage());
         }
     }
+
+    @GetMapping("{id}/account-access")
+    ResponseEntity<List<AccountAccessTO>> getAccountAccess(@PathVariable String id) {
+        try {
+            UserBO userBO;
+            userBO = userService.findById(id);
+            UserTO userTO = converter.toUserTO(userBO);
+            return ResponseEntity.ok(userTO.getAccountAccesses());
+        } catch (UserNotFoundException e) {
+            throw new NotFoundRestException(e.getMessage());
+        }
+
+    }
+
 }
