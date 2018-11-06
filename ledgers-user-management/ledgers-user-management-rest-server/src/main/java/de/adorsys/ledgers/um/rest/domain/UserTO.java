@@ -20,6 +20,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserTO {
     private String id;
 
@@ -34,6 +37,15 @@ public class UserTO {
 
 //    private List<LedgerAccount> accounts;
 
+    private List<AccountAccessTO> accountAccesses = new ArrayList<>();
+
+    public List<AccountAccessTO> getAccountAccesses() {
+        return accountAccesses;
+    }
+
+    public void setAccountAccesses(List<AccountAccessTO> accountAccesses) {
+        this.accountAccesses = accountAccesses;
+    }
 
     public String getId() {
         return id;
