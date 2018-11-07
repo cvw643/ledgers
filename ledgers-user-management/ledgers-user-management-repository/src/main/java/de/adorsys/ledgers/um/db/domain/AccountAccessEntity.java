@@ -8,10 +8,9 @@ import javax.persistence.*;
 *
 * */
 
-//Todo clarify unique constrains iban & access_type
 @Entity
 @Table(name = "account_accesses")
-public class AccountAccess {
+public class AccountAccessEntity {
 
     @Id
     @Column(name = "account_access_id")
@@ -25,7 +24,7 @@ public class AccountAccess {
     @NotNull
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private AccessType accessType= AccessType.OWNER;
+    private AccessTypeEntity accessTypeEntity = AccessTypeEntity.OWNER;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private UserEntity user;
@@ -54,11 +53,11 @@ public class AccountAccess {
         this.iban = iban;
     }
 
-    public AccessType getAccessType() {
-        return accessType;
+    public AccessTypeEntity getAccessTypeEntity() {
+        return accessTypeEntity;
     }
 
-    public void setAccessType(AccessType accessType) {
-        this.accessType = accessType;
+    public void setAccessTypeEntity(AccessTypeEntity accessTypeEntity) {
+        this.accessTypeEntity = accessTypeEntity;
     }
 }

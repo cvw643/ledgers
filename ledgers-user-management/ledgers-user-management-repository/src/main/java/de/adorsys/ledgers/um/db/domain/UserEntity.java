@@ -48,7 +48,7 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     @LazyCollection(LazyCollectionOption.FALSE)
-    private List<AccountAccess> accountAccesses = new ArrayList<>();
+    private List<AccountAccessEntity> accountAccessEntities = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -90,11 +90,11 @@ public class UserEntity {
         this.scaUserData = scaUserData;
     }
 
-    public List<AccountAccess> getAccountAccesses() {
-        return accountAccesses;
+    public List<AccountAccessEntity> getAccountAccessEntities() {
+        return accountAccessEntities;
     }
 
-    public void setAccountAccesses(List<AccountAccess> accountAccesses) {
-        this.accountAccesses = accountAccesses;
+    public void setAccountAccessEntities(List<AccountAccessEntity> accountAccessEntities) {
+        this.accountAccessEntities = accountAccessEntities;
     }
 }

@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.um.db.repository;
 
+import de.adorsys.ledgers.um.db.domain.AccountAccessEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,7 @@ import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 
-import de.adorsys.ledgers.um.db.domain.AccessType;
-import de.adorsys.ledgers.um.db.domain.AccountAccess;
+import de.adorsys.ledgers.um.db.domain.AccessTypeEntity;
 import de.adorsys.ledgers.um.db.domain.UserEntity;
 import de.adorsys.ledgers.um.db.test.UmRepositoryApplication;
 import de.adorsys.ledgers.util.Ids;
@@ -28,7 +28,7 @@ import de.adorsys.ledgers.util.Ids;
     DbUnitTestExecutionListener.class})
 @DatabaseSetup("AccountAccessRepositoryIT-db-entries.xml")
 @DatabaseTearDown(value={"db-delete-all.xml"}, type= DatabaseOperation.DELETE_ALL)
-public class AccountAccessRepositoryIT {
+public class AccountAccessEntityRepositoryIT {
 
     @Autowired
     private AccountAccessRepository accountAccessRepository;
@@ -39,21 +39,22 @@ public class AccountAccessRepositoryIT {
     @Test
     public void test_create_ok() {
 
-        AccountAccess accountAccess = new AccountAccess();
+        AccountAccessEntity accountAccess = new AccountAccessEntity();
         accountAccess.setId(Ids.id());
         accountAccess.setIban("FakeIban");
-        accountAccess.setAccessType(AccessType.OWNER);
+        accountAccess.setAccessTypeEntity(AccessTypeEntity.OWNER);
         UserEntity user = new UserEntity();
         user.setId(Ids.id());
         user.setPin("1234");
         user.setLogin("vne");
         user.setEmail("vne@adorsys.de");
         accountAccess.setUser(user);
-        user.getAccountAccesses().add(accountAccess);
+        user.getAccountAccessEntities().add(accountAccess);
         accountAccess.setUser(user);
         userRepository.save(user);
-        AccountAccess result = accountAccessRepository.findById(accountAccess.getId()).orElse(null);
+        AccountAccessEntity result = accountAccessRepository.findById(accountAccess.getId()).orElse(null);
         Assert.notNull(result);
+
     }
 
 }
