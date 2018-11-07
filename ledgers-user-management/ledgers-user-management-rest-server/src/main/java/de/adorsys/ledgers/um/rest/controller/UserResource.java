@@ -67,10 +67,10 @@ public class UserResource {
     }
 
     @GetMapping("{id}/account-access")
-    ResponseEntity<List<AccountAccessTO>> getAccountAccess(@PathVariable String id) {
+    ResponseEntity<List<AccountAccessTO>> getAccountAccess(@PathVariable String userId) {
         try {
             UserBO userBO;
-            userBO = userService.findById(id);
+            userBO = userService.findById(userId);
             UserTO userTO = converter.toUserTO(userBO);
             return ResponseEntity.ok(userTO.getAccountAccesses());
         } catch (UserNotFoundException e) {
@@ -78,5 +78,11 @@ public class UserResource {
         }
 
     }
+
+    @PostMapping("{id}/account-access")
+    ResponseEntity<AccountAccessTO> createAccountAccess(@PathVariable String userId, @RequestBody AccountAccessTO accAccess) {
+        return null;
+    }
+
 
 }
