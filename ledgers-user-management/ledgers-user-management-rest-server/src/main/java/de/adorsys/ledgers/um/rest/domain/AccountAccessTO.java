@@ -1,18 +1,17 @@
 package de.adorsys.ledgers.um.rest.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.jetbrains.annotations.NotNull;
 
 public class AccountAccessTO {
 
     private String id;
 
-    @NotNull
     private String iban;
 
-    @NotNull
-    private AccessTypeTO accessType; // = AccessTypeTO.OWNER;
+    private AccessTypeTO accessType;
 
-    @NotNull
+    @JsonManagedReference
     private UserTO user;
 
     public AccountAccessTO(@NotNull String iban, AccessTypeTO accessType, @NotNull UserTO user) {

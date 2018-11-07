@@ -16,6 +16,7 @@
 
 package de.adorsys.ledgers.um.rest.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +38,7 @@ public class UserTO {
 
 //    private List<LedgerAccount> accounts;
 
+    @JsonBackReference
     private List<AccountAccessTO> accountAccesses = new ArrayList<>();
 
     public List<AccountAccessTO> getAccountAccesses() {
