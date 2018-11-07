@@ -66,7 +66,7 @@ public class UserResource {
         }
     }
 
-    @GetMapping("{id}/account-access")
+    @GetMapping("{userId}/account-access")
     ResponseEntity<List<AccountAccessTO>> getAccountAccess(@PathVariable String userId) {
         try {
             UserBO userBO;
