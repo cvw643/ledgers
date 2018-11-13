@@ -16,14 +16,16 @@
 
 package de.adorsys.ledgers.um.impl.converter;
 
-import de.adorsys.ledgers.um.api.domain.ScaUserDataBO;
-import de.adorsys.ledgers.um.api.domain.UserBO;
-import de.adorsys.ledgers.um.db.domain.ScaUserDataEntity;
-import de.adorsys.ledgers.um.db.domain.UserEntity;
+import java.util.List;
 
 import org.mapstruct.Mapper;
 
-import java.util.List;
+import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
+import de.adorsys.ledgers.um.api.domain.ScaUserDataBO;
+import de.adorsys.ledgers.um.api.domain.UserBO;
+import de.adorsys.ledgers.um.db.domain.AccountAccess;
+import de.adorsys.ledgers.um.db.domain.ScaUserDataEntity;
+import de.adorsys.ledgers.um.db.domain.UserEntity;
 
 @Mapper(componentModel = "spring")
 public interface UserConverter {
@@ -39,4 +41,13 @@ public interface UserConverter {
     List<ScaUserDataBO> toScaUserDataListBO(List<ScaUserDataEntity> list);
 
     List<ScaUserDataEntity> toScaUserDataListEntity(List<ScaUserDataBO> bos);
+
+    AccountAccessBO toAccountAccessBO(AccountAccess entity);
+
+    AccountAccess toAccountAccessEntity(AccountAccessBO bo);
+
+    List<AccountAccessBO> toAccountAccessListBO(List<AccountAccess> list);
+
+    List<AccountAccess> toAccountAccessListEntity(List<AccountAccessBO> bos);
+    
 }

@@ -32,6 +32,7 @@ import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.exception.UserAlreadyExistsException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
+import de.adorsys.ledgers.um.db.domain.AccountAccess;
 import de.adorsys.ledgers.um.db.domain.ScaUserDataEntity;
 import de.adorsys.ledgers.um.db.domain.UserEntity;
 import de.adorsys.ledgers.um.db.repository.UserRepository;
@@ -82,26 +83,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean authorize(String login, String pin, String accountId) throws UserNotFoundException {
         return authorize(login, pin);
-//    	if( authorize(login, pin)) {
-        // verify that the user has this account.
-        // TODO get Account accesses and check if user is authorized to access this account.
-//    		return true;
-//    	}
-//        UserEntity user = getUser(login);
-//        String hashedPin = MD5Util.encode(user.getPin());
-//        //        long count = user.getAccounts().stream().filter(a -> a.getId().equals(accountId)).count();
-//        //        return pinVerified && count > 0;
-//        return MD5Util.verify(pin, hashedPin);
-//    	return false;
     }
-
-//    @Override
-//    public void addAccount(String login, LedgerAccount account) throws UserNotFoundException {
-//        UserPO user = getUser(login);
-//        List<LedgerAccount> accounts = user.getAccounts();
-//        accounts.add(account);
-//        userRepository.save(user);
-//    }
 
     @Override
     public UserBO findById(String id) throws UserNotFoundException {
@@ -111,6 +93,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+	public UserBO findByLogin(String login) throws UserNotFoundException {
+    	return userConverter.toUserBO(getUser(login));
+	}
+
+	@Override
     public List<ScaUserDataBO> getUserScaData(String userId) throws UserNotFoundException {
         Optional<UserEntity> user = userRepository.findById(userId);
         user.orElseThrow(() -> new UserNotFoundException(String.format(USER_WITH_ID_NOT_FOUND, userId)));
@@ -135,8 +122,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateScaData(List<ScaUserDataBO> scaDataList, String userLogin) throws UserNotFoundException {
-
+    public UserBO updateScaData(List<ScaUserDataBO> scaDataList, String userLogin) throws UserNotFoundException {
         logger.info("Retrieving user by login={}", userLogin);
         UserEntity user = userRepository.findFirstByLogin(userLogin)
                                   .orElseThrow(() -> new UserNotFoundException(String.format(USER_WITH_LOGIN_NOT_FOUND, userLogin)));
@@ -145,7 +131,8 @@ public class UserServiceImpl implements UserService {
         user.setScaUserData(scaMethods);
 
         logger.info("{} sca methods would be updated", scaMethods.size());
-        userRepository.save(user);
+        UserEntity save = userRepository.save(user);
+        return userConverter.toUserBO(save);
     }
 
     @NotNull
@@ -159,4 +146,19 @@ public class UserServiceImpl implements UserService {
     private UserNotFoundException userNotFoundException(String login) {
         return new UserNotFoundException(String.format(USER_WITH_LOGIN_NOT_FOUND, login));
     }
+
+	@Override
+	public UserBO updateAccountAccess(String userLogin, List<AccountAccessBO> accountAccessListBO)
+			throws UserNotFoundException {
+        logger.info("Retrieving user by login={}", userLogin);
+        UserEntity user = userRepository.findFirstByLogin(userLogin)
+                                  .orElseThrow(() -> new UserNotFoundException(String.format(USER_WITH_LOGIN_NOT_FOUND, userLogin)));
+
+        List<AccountAccess> accountAccesses = userConverter.toAccountAccessListEntity(accountAccessListBO);
+        user.setAccountAccesses(accountAccesses);
+        
+        logger.info("{} account accesses would be updated", accountAccesses.size());
+        UserEntity save = userRepository.save(user);
+        return userConverter.toUserBO(save);
+	}
 }

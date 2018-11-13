@@ -16,12 +16,13 @@
 
 package de.adorsys.ledgers.um.api.service;
 
-import de.adorsys.ledgers.um.api.domain.ScaUserDataBO;
+import java.util.List;
+
 import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
+import de.adorsys.ledgers.um.api.domain.ScaUserDataBO;
 import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.exception.UserAlreadyExistsException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
-import java.util.List;
 
 public interface UserService {
 
@@ -56,15 +57,6 @@ public interface UserService {
     boolean authorize(String id, String pin, String accountId) throws UserNotFoundException;
 
     /**
-     * Adds new account for a specific User
-     *
-     * @param login   User login
-     * @param account Account to added for the user or throws UserNotFoundException
-     * @throws UserNotFoundException is thrown if user can`t be found
-     */
-//    void addAccount(String login, LedgerAccount account) throws UserNotFoundException;
-
-    /**
      * Finds a User by its identifier
      *
      * @param id User identifier
@@ -72,6 +64,15 @@ public interface UserService {
      * @throws UserNotFoundException is thrown if user can`t be found
      */
     UserBO findById(String id) throws UserNotFoundException;
+
+    /**
+     * Finds a User by its identifier
+     *
+     * @param login User identifier
+     * @return a User or throws a UserNotFoundException
+     * @throws UserNotFoundException is thrown if user can`t be found
+     */
+    UserBO findByLogin(String login) throws UserNotFoundException;
 
     /**
      *
@@ -102,6 +103,9 @@ public interface UserService {
      *
      * @param scaDataList user methods
      * @param userLogin user login
+     * @return 
      */
-    void updateScaData(List<ScaUserDataBO> scaDataList, String userLogin) throws UserNotFoundException;
+    UserBO updateScaData(List<ScaUserDataBO> scaDataList, String userLogin) throws UserNotFoundException;
+
+	UserBO updateAccountAccess(String userLogin, List<AccountAccessBO> accountAccessListBO)  throws UserNotFoundException;
 }

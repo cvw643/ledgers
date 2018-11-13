@@ -28,6 +28,7 @@ import de.adorsys.ledgers.sca.exception.*;
 import de.adorsys.ledgers.sca.service.SCAOperationService;
 import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
 import de.adorsys.ledgers.um.api.domain.ScaUserDataBO;
+import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
 import org.junit.Before;
@@ -105,7 +106,7 @@ public class MiddlewareServiceImplTest {
         });
 
         when(scaMethodTOConverter.toSCAMethodListBO(scaMethodTOS)).thenReturn(userData);
-        doNothing().when(userService).updateScaData(userData, userLogin);
+        when(userService.updateScaData(userData, userLogin)).thenReturn(new UserBO());
 
         middlewareService.updateScaMethods(scaMethodTOS, userLogin);
 
