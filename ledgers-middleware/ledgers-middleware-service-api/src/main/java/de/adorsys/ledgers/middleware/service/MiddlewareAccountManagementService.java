@@ -52,4 +52,6 @@ public interface MiddlewareAccountManagementService {
      * @throws UserNotFoundMiddlewareException is thrown if user can`t be found
      */
     UserTO updateAccountAccess(String userLogin, List<AccountAccessTO> accounts) throws UserNotFoundMiddlewareException;
+    
+	List<UserTO> listUsers(int page, int size);
 }

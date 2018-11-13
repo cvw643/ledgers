@@ -33,6 +33,8 @@ public interface UserTOMapper {
     UserTO toUserTO(UserBO user);
 
     UserBO toUserBO(UserTO user);
+    
+	List<UserTO> toUserTOList(List<UserBO> listUsers);    
 
     ScaUserDataBO toScaUserDataBO(ScaUserDataTO userData);
 

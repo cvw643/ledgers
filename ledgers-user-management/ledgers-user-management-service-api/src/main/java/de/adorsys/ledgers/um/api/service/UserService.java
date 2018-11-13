@@ -108,4 +108,6 @@ public interface UserService {
     UserBO updateScaData(List<ScaUserDataBO> scaDataList, String userLogin) throws UserNotFoundException;
 
 	UserBO updateAccountAccess(String userLogin, List<AccountAccessBO> accountAccessListBO)  throws UserNotFoundException;
+
+	List<UserBO> listUsers(int page, int size);
 }

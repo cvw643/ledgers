@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
@@ -160,5 +161,11 @@ public class UserServiceImpl implements UserService {
         logger.info("{} account accesses would be updated", accountAccesses.size());
         UserEntity save = userRepository.save(user);
         return userConverter.toUserBO(save);
+	}
+	
+	@Override
+	public List<UserBO> listUsers(int page, int size) {
+		List<UserEntity> content = userRepository.findAll(PageRequest.of(page, size)).getContent();
+		return userConverter.toUserBOList(content);
 	}
 }

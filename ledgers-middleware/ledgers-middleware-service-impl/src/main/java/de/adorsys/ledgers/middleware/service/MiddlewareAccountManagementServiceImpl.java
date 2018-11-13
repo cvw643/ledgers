@@ -73,4 +73,9 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		}
 	}
 
+	@Override
+	public List<UserTO> listUsers(int page, int size) {
+		return userTOMapper.toUserTOList(userService.listUsers(page, size));
+	}
+
 }
