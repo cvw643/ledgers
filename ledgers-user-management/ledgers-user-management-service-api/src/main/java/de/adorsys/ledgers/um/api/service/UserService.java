@@ -69,8 +69,8 @@ public interface UserService {
      * Finds a User by its login
      *
      * @param login User identifier
-     * @return a User or throws a UserNotFoundException
      * @throws UserNotFoundException is thrown if user can`t be found
+     * @return a User or throws a UserNotFoundException
      */
     UserBO findByLogin(String login) throws UserNotFoundException;
 
@@ -79,11 +79,33 @@ public interface UserService {
      *
      * @param scaDataList user methods
      * @param userLogin user login
-     * @return 
+     * @throws UserNotFoundException when user is not found
+     * @return UserBO
      */
     UserBO updateScaData(List<ScaUserDataBO> scaDataList, String userLogin) throws UserNotFoundException;
 
+    /**
+     * Update Account Accesses by user login
+     *
+     * @param accountAccessListBO user methods
+     * @param userLogin user login
+     * @throws UserNotFoundException when user is not found
+     * @return UserBO
+     */
 	UserBO updateAccountAccess(String userLogin, List<AccountAccessBO> accountAccessListBO)  throws UserNotFoundException;
 
+    /**
+     *
+     * @param page number of page
+     * @param size amount of users on the page
+     * @return List<UserBO> list of users
+     */
 	List<UserBO> listUsers(int page, int size);
+
+    /**
+     * Method to automatically generate User
+     *
+     * @return UserBO
+     */
+	UserBO autogenerateUser();
 }

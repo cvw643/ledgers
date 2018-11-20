@@ -94,6 +94,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserBO autogenerateUser() {
+        return null;
+    }
+
+    @Override
     public UserBO findById(String id) throws UserNotFoundException {
         Optional<UserEntity> userPO = userRepository.findById(id);
         userPO.orElseThrow(() -> new UserNotFoundException(String.format(USER_WITH_ID_NOT_FOUND, id)));
