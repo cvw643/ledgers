@@ -127,6 +127,11 @@ public class UserServiceImplTest {
         userService.authorise(USER_NON_EXISTING_LOGIN, "SomePin");
     }
 
+    @Test
+    public void autogenerateUser() {
+        UserBO userBO = userService.autogenerateUser();
+    }
+
     private UserBO readUserBO() {
         try {
             return reader.getObjectFromResource(getClass(),"user-BO.yml", UserBO.class);
