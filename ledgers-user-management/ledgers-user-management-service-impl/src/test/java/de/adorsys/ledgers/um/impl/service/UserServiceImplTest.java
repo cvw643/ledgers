@@ -1,8 +1,11 @@
 package de.adorsys.ledgers.um.impl.service;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -130,6 +133,18 @@ public class UserServiceImplTest {
     @Test
     public void autogenerateUser() {
         UserBO userBO = userService.autogenerateUser();
+
+        assertThat(userBO.getLogin(), not(isEmptyString()));
+        assertThat(userBO.getEmail(), not(isEmptyString()));
+        assertThat(userBO.getPin(), not(isEmptyString()));
+
+        assertThat(userBO.getScaUserData().size(), is(2));
+        assertThat(userBO.getAccountAccesses().size(), is(1));
+
+        assertThat(userBO.getScaUserData().get(0).getMethodValue(), not(isEmptyString()));
+        assertThat(userBO.getScaUserData().get(1).getMethodValue(), not(isEmptyString()));
+
+        assertThat(userBO.getAccountAccesses().get(0).getIban(), not(isEmptyString()));
     }
 
     private UserBO readUserBO() {
