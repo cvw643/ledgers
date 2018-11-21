@@ -45,9 +45,9 @@ import de.adorsys.ledgers.util.MD5Util;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private static final String USER_WITH_LOGIN_NOT_FOUND = "User with login=%s not found";
     private static final String USER_WITH_ID_NOT_FOUND = "User with id=%s not found";
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final UserConverter userConverter;
 
@@ -105,8 +105,17 @@ public class UserServiceImpl implements UserService {
         String email = (name + "." + lastName + "@mail.de").toLowerCase();
         String login = (name.charAt(0) + lastName).toLowerCase();
 
-        // TODO: do we need to check if user login && email is unique ???
+        Optional<UserEntity> userOptional = userRepository.findFirstByLogin(login);
 
+        // asserting that login is unique
+        while (userOptional.isPresent()) {
+            name = faker.name().firstName();
+            lastName = faker.name().lastName();
+            login = (name.charAt(0) + lastName).toLowerCase();
+            userOptional = userRepository.findFirstByLogin(login);
+        }
+
+        // generating random pin
         userBO.setEmail(email);
         userBO.setLogin(login);
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
@@ -122,6 +131,8 @@ public class UserServiceImpl implements UserService {
         // add Account access
         Iban iban = Iban.random();
         userBO.getAccountAccesses().add(new AccountAccessBO(iban.toFormattedString(), AccessTypeBO.OWNER));
+
+        logger.info("Auto generating user: " + userBO.toString());
 
         return  userBO;
     }

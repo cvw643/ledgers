@@ -132,6 +132,9 @@ public class UserServiceImplTest {
 
     @Test
     public void autogenerateUser() {
+        Optional<UserEntity> emptyUser = Optional.empty();
+        when(repository.findFirstByLogin(anyString())).thenReturn(emptyUser);
+
         UserBO userBO = userService.autogenerateUser();
 
         assertThat(userBO.getLogin(), not(isEmptyString()));
