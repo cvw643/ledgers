@@ -135,6 +135,7 @@ public class UserServiceImplTest {
         Optional<UserEntity> emptyUser = Optional.empty();
         when(repository.findFirstByLogin(anyString())).thenReturn(emptyUser);
 
+        // TODO: use isEqualToComparingFieldByFieldRecursively
         UserBO userBO = userService.autogenerateUser();
 
         assertThat(userBO.getLogin(), not(isEmptyString()));

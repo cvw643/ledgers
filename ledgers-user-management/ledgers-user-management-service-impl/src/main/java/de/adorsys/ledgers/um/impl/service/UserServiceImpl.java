@@ -25,6 +25,7 @@ import com.github.javafaker.PhoneNumber;
 import de.adorsys.ledgers.um.api.domain.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.exception.ConstraintViolationException;
+import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -129,7 +130,7 @@ public class UserServiceImpl implements UserService {
         userBO.getScaUserData().add(new ScaUserDataBO(ScaMethodTypeBO.MOBILE, phone.phoneNumber()));
 
         // add Account access
-        Iban iban = Iban.random();
+        Iban iban = Iban.random(CountryCode.DE);
         userBO.getAccountAccesses().add(new AccountAccessBO(iban.toFormattedString(), AccessTypeBO.OWNER));
 
         logger.info("Auto generating user: " + userBO.toString());
