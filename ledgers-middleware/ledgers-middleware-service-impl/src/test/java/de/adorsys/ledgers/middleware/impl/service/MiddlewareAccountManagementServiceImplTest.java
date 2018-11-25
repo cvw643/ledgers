@@ -1,9 +1,32 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountDetailsBO;
 import de.adorsys.ledgers.deposit.api.domain.TransactionDetailsBO;
 import de.adorsys.ledgers.deposit.api.exception.DepositAccountNotFoundException;
@@ -24,25 +47,6 @@ import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
 import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MiddlewareAccountManagementServiceImplTest {
@@ -76,30 +80,30 @@ public class MiddlewareAccountManagementServiceImplTest {
     
     @Test
     public void getAccountDetailsByAccountId() throws DepositAccountNotFoundException, AccountNotFoundMiddlewareException, IOException, LedgerAccountNotFoundException {
-        when(accountService.getDepositAccountById(ACCOUNT_ID, TIME, true)).thenReturn(getDepositAccountDetailsBO());
+//        when(accountService.getDepositAccountById(ACCOUNT_ID, TIME, true)).thenReturn(getDepositAccountDetailsBO());
 
         when(detailsMapper.toAccountDetailsTO(any())).thenReturn(getAccount(AccountDetailsTO.class));
-        AccountDetailsTO details = middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, TIME);
+        AccountDetailsTO details = middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID);
 
         assertThat(details).isNotNull();
-        verify(accountService, times(1)).getDepositAccountById(ACCOUNT_ID, TIME, true);
+        verify(accountService, times(1)).getDepositAccountById(ACCOUNT_ID, TIME, false);
     }
 
 	@Test(expected = AccountNotFoundMiddlewareException.class)
     public void getAccountDetailsByAccountId_wrong_id() throws AccountNotFoundMiddlewareException, DepositAccountNotFoundException {
-    	when(accountService.getDepositAccountById(WRONG_ID, TIME, true)).thenThrow(new DepositAccountNotFoundException());
+    	when(accountService.getDepositAccountById(WRONG_ID, TIME, false)).thenThrow(new DepositAccountNotFoundException());
 
-        middlewareService.getAccountDetailsByAccountId(WRONG_ID, TIME);
-        verify(accountService, times(1)).getDepositAccountById(WRONG_ID, TIME, true);
+        middlewareService.getAccountDetailsByAccountId(WRONG_ID);
+        verify(accountService, times(1)).getDepositAccountById(WRONG_ID, TIME, false);
     }
 
     @Test
     public void getAccountDetailsByAccountId_Success() throws AccountNotFoundMiddlewareException, LedgerAccountNotFoundException, IOException, DepositAccountNotFoundException {
     	DepositAccountDetailsBO depositAccountDetailsBO = getDepositAccountDetailsBO();
-        when(accountService.getDepositAccountById(ACCOUNT_ID, TIME, true)).thenReturn(depositAccountDetailsBO);
+        when(accountService.getDepositAccountById(ACCOUNT_ID, TIME, false)).thenReturn(depositAccountDetailsBO);
         when(detailsMapper.toAccountDetailsTO(depositAccountDetailsBO)).thenReturn(getAccountDetailsTO());
         
-        AccountDetailsTO accountDetails = middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, TIME);
+        AccountDetailsTO accountDetails = middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID);
         assertThat(accountDetails).isNotNull();
         assertThat(accountDetails.getBalances()).isNotNull();
         assertThat(accountDetails.getBalances().size()).isEqualTo(2);
@@ -107,8 +111,8 @@ public class MiddlewareAccountManagementServiceImplTest {
 
     @Test(expected = AccountNotFoundMiddlewareException.class)
     public void getAccountDetailsByAccountId_Failure_depositAccount_Not_Found() throws AccountNotFoundMiddlewareException, DepositAccountNotFoundException {
-        when(accountService.getDepositAccountById(ACCOUNT_ID, TIME, true)).thenThrow(new DepositAccountNotFoundException());
-        middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, TIME);
+        when(accountService.getDepositAccountById(ACCOUNT_ID, TIME, false)).thenThrow(new DepositAccountNotFoundException());
+        middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID);
     }
 
     @Test

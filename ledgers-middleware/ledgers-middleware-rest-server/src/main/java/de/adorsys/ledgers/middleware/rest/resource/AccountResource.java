@@ -16,6 +16,23 @@
 
 package de.adorsys.ledgers.middleware.rest.resource;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import de.adorsys.ledgers.middleware.api.domain.account.AccountBalanceTO;
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.account.FundsConfirmationRequestTO;
@@ -26,17 +43,6 @@ import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareExcepti
 import de.adorsys.ledgers.middleware.api.service.MiddlewareAccountManagementService;
 import de.adorsys.ledgers.middleware.rest.exception.ConflictRestException;
 import de.adorsys.ledgers.middleware.rest.exception.NotFoundRestException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/accounts")
@@ -52,7 +58,7 @@ public class AccountResource {
 	@GetMapping("/{accountId}")
     public ResponseEntity<AccountDetailsTO> getAccountDetailsById(@PathVariable String accountId) {
         try {
-            return ResponseEntity.ok(middlewareAccountService.getAccountDetailsByAccountId(accountId, LocalDateTime.MAX));
+            return ResponseEntity.ok(middlewareAccountService.getAccountDetailsByAccountId(accountId));
         } catch (AccountNotFoundMiddlewareException e) {
             logger.error(e.getMessage(), e);
             throw new NotFoundRestException(e.getMessage()).withDevMessage(e.getMessage());
@@ -62,7 +68,7 @@ public class AccountResource {
     @GetMapping("/balances/{accountId}")
     public ResponseEntity<List<AccountBalanceTO>> getBalances(@PathVariable String accountId) {
         try {
-        	AccountDetailsTO accountDetails = middlewareAccountService.getAccountDetailsByAccountId(accountId, LocalDateTime.MAX);
+        	AccountDetailsTO accountDetails = middlewareAccountService.getAccountDetailsByAccountId(accountId);
             return ResponseEntity.ok(accountDetails.getBalances());
         } catch (AccountNotFoundMiddlewareException e) {
             logger.error(e.getMessage(), e);

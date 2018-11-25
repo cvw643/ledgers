@@ -1,5 +1,16 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountDetailsBO;
 import de.adorsys.ledgers.deposit.api.domain.FundsConfirmationRequestBO;
 import de.adorsys.ledgers.deposit.api.domain.TransactionDetailsBO;
@@ -20,16 +31,6 @@ import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
 import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccountManagementService {
@@ -84,9 +85,16 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
     }
 
     @Override
-    public AccountDetailsTO getAccountDetailsByAccountId(String accountId, LocalDateTime refTime) throws AccountNotFoundMiddlewareException {
+    public AccountDetailsTO getAccountDetailsByAccountId(String accountId) throws AccountNotFoundMiddlewareException {
+    	return getAccountDetailsByAccountIdInternal(accountId, BASE_TIME, false);
+    }
+    @Override
+    public AccountDetailsTO getAccountDetailsWithBalancesByAccountId(String accountId, LocalDateTime refTime) throws AccountNotFoundMiddlewareException {
+    	return getAccountDetailsByAccountIdInternal(accountId, refTime, true);
+    }
+    private AccountDetailsTO getAccountDetailsByAccountIdInternal(String accountId, LocalDateTime refTime, boolean withBalance) throws AccountNotFoundMiddlewareException {
         try {
-            DepositAccountDetailsBO accountDetailsBO = depositAccountService.getDepositAccountById(accountId, refTime, true);
+            DepositAccountDetailsBO accountDetailsBO = depositAccountService.getDepositAccountById(accountId, refTime, withBalance);
             return accountDetailsMapper.toAccountDetailsTO(accountDetailsBO);
         } catch (DepositAccountNotFoundException e) {
             logger.error("Deposit Account with id=" + accountId + "not found", e);
@@ -96,17 +104,14 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 
     @Override
     public AccountDetailsTO getAccountDetailsByIban(String iban) throws AccountNotFoundMiddlewareException {
-        try {
-            DepositAccountDetailsBO depositAccountBO = depositAccountService.getDepositAccountByIban(iban, BASE_TIME, false);
-            return accountDetailsMapper.toAccountDetailsTO(depositAccountBO);
-        } catch (DepositAccountNotFoundException e) {
-            logger.error("Deposit Account with iban={} not found", iban, e);
-            throw new AccountNotFoundMiddlewareException(e.getMessage(), e);
-        }
+        return getAccountDetailsByIbanInternal(iban, BASE_TIME, false);
     }
 
     @Override
     public AccountDetailsTO getAccountDetailsWithBalancesByIban(String iban, LocalDateTime refTime) throws AccountNotFoundMiddlewareException {
+            return getAccountDetailsByIbanInternal(iban, refTime, true);
+    }
+    private AccountDetailsTO getAccountDetailsByIbanInternal(String iban, LocalDateTime refTime, boolean withBalances) throws AccountNotFoundMiddlewareException {
         try {
             DepositAccountDetailsBO depositAccountBO = depositAccountService.getDepositAccountByIban(iban, refTime, true);
             return accountDetailsMapper.toAccountDetailsTO(depositAccountBO);
@@ -118,6 +123,15 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 
     @Override
     public List<AccountDetailsTO> getAllAccountDetailsByUserLogin(String userLogin) throws UserNotFoundMiddlewareException, AccountNotFoundMiddlewareException {
+    	return getAllAccountDetailsByUserLoginInternal(userLogin, BASE_TIME, false);
+    }
+
+    @Override
+    public List<AccountDetailsTO> getAllAccountDetailsWithBalancesByUserLogin(String userLogin, LocalDateTime refTime) throws UserNotFoundMiddlewareException, AccountNotFoundMiddlewareException {
+    	return getAllAccountDetailsByUserLoginInternal(userLogin, refTime, true);
+    }
+
+    private List<AccountDetailsTO> getAllAccountDetailsByUserLoginInternal(String userLogin, LocalDateTime refTime, boolean withBalnaces) throws UserNotFoundMiddlewareException, AccountNotFoundMiddlewareException {
         logger.info("Retrieving accounts by user login {}", userLogin);
         try {
             UserBO userBO = userService.findByLogin(userLogin);
@@ -130,7 +144,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
                                          .collect(Collectors.toList());
             logger.info("{} were accounts were filtered as OWN", ibans.size());
 
-            List<DepositAccountDetailsBO> depositAccounts = depositAccountService.getDepositAccountsByIban(ibans, BASE_TIME, false);
+            List<DepositAccountDetailsBO> depositAccounts = depositAccountService.getDepositAccountsByIban(ibans, refTime, withBalnaces);
             logger.info("{} deposit accounts were found", depositAccounts.size());
 
             return depositAccounts.stream().map(accountDetailsMapper::toAccountDetailsTO).collect(Collectors.toList());
@@ -142,7 +156,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
             throw new AccountNotFoundMiddlewareException(e.getMessage(), e);
         }
     }
-
+    
     @Override
     public TransactionTO getTransactionById(String accountId, String transactionId) throws TransactionNotFoundMiddlewareException {
         try {

@@ -1,15 +1,15 @@
 package de.adorsys.ledgers.middleware.api.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.account.FundsConfirmationRequestTO;
 import de.adorsys.ledgers.middleware.api.domain.account.TransactionTO;
 import de.adorsys.ledgers.middleware.api.exception.AccountNotFoundMiddlewareException;
 import de.adorsys.ledgers.middleware.api.exception.TransactionNotFoundMiddlewareException;
 import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 public interface MiddlewareAccountManagementService {
 
@@ -22,17 +22,20 @@ public interface MiddlewareAccountManagementService {
 
     //============================ Account Details ==============================//
 
-    AccountDetailsTO getAccountDetailsByAccountId(String accountId, LocalDateTime time) throws AccountNotFoundMiddlewareException;
+    AccountDetailsTO getAccountDetailsByAccountId(String accountId) throws AccountNotFoundMiddlewareException;
+    AccountDetailsTO getAccountDetailsWithBalancesByAccountId(String accountId, LocalDateTime time) throws AccountNotFoundMiddlewareException;
 
     AccountDetailsTO getAccountDetailsByIban(String iban) throws AccountNotFoundMiddlewareException;
-
     AccountDetailsTO getAccountDetailsWithBalancesByIban(String iban, LocalDateTime refTime) throws AccountNotFoundMiddlewareException;
 
     List<AccountDetailsTO> getAllAccountDetailsByUserLogin(String userLogin) throws UserNotFoundMiddlewareException, AccountNotFoundMiddlewareException;
+	List<AccountDetailsTO> getAllAccountDetailsWithBalancesByUserLogin(String userLogin, LocalDateTime refTime)
+			throws UserNotFoundMiddlewareException, AccountNotFoundMiddlewareException;
 
     TransactionTO getTransactionById(String accountId, String transactionId) throws AccountNotFoundMiddlewareException, TransactionNotFoundMiddlewareException;
 
     List<TransactionTO> getTransactionsByDates(String accountId, LocalDate dateFrom, LocalDate dateTo) throws AccountNotFoundMiddlewareException;
 
     boolean confirmFundsAvailability(FundsConfirmationRequestTO request) throws AccountNotFoundMiddlewareException;
+
 }

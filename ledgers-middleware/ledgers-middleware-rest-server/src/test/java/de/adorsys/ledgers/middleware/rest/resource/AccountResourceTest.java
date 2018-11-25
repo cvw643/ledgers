@@ -1,17 +1,25 @@
 package de.adorsys.ledgers.middleware.rest.resource;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import de.adorsys.ledgers.middleware.api.domain.account.AccountBalanceTO;
-import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
-import de.adorsys.ledgers.middleware.api.domain.account.TransactionTO;
-import de.adorsys.ledgers.middleware.api.exception.AccountNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.TransactionNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.service.MiddlewareAccountManagementService;
-import de.adorsys.ledgers.middleware.rest.exception.ExceptionAdvisor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,26 +35,22 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import de.adorsys.ledgers.middleware.api.domain.account.AccountBalanceTO;
+import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
+import de.adorsys.ledgers.middleware.api.domain.account.TransactionTO;
+import de.adorsys.ledgers.middleware.api.exception.AccountNotFoundMiddlewareException;
+import de.adorsys.ledgers.middleware.api.exception.TransactionNotFoundMiddlewareException;
+import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
+import de.adorsys.ledgers.middleware.api.service.MiddlewareAccountManagementService;
+import de.adorsys.ledgers.middleware.rest.exception.ExceptionAdvisor;
 import pro.javatar.commons.reader.JsonReader;
 import pro.javatar.commons.reader.YamlReader;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -79,7 +83,7 @@ public class AccountResourceTest {
 
     @Test
     public void getAccountDetailsByAccountId() throws Exception {
-        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME)).thenReturn(getDetails());
+        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID)).thenReturn(getDetails());
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/accounts/{accountId}", ACCOUNT_ID))
                                       .andDo(print())
@@ -92,12 +96,12 @@ public class AccountResourceTest {
         });
         assertThat(mvcResult.getResponse().getStatus(), is(200));
         assertThat(Optional.ofNullable(actual).map(AccountDetailsTO::getId).orElse(null), is(ACCOUNT_ID));
-        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME);
+        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID);
     }
 
     @Test
     public void getAccountDetailsByAccountId_Failure_NotFound() throws Exception {
-        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME))
+        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID))
                 .thenThrow(new AccountNotFoundMiddlewareException("Account with id=" + ACCOUNT_ID + " not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/accounts/{accountId}", ACCOUNT_ID))
@@ -106,7 +110,7 @@ public class AccountResourceTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andReturn();
 
-        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME);
+        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID);
     }
 
     @Test
@@ -153,7 +157,7 @@ public class AccountResourceTest {
     public void getBalances_Success() throws Exception {
         AccountDetailsTO accountDetails = readBalances();
 
-        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME)).thenReturn(accountDetails);
+        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID)).thenReturn(accountDetails);
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/accounts/balances/{accountId}", ACCOUNT_ID))
                                       .andDo(print())
@@ -169,12 +173,12 @@ public class AccountResourceTest {
         actual.forEach(a -> assertThat(a).isNotNull());
         assertThat(actual.get(0)).isEqualToComparingFieldByFieldRecursively(accountDetails.getBalances().get(0));
         assertThat(actual.get(1)).isEqualToComparingFieldByFieldRecursively(accountDetails.getBalances().get(1));
-        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME);
+        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID);
     }
 
     @Test
     public void getBalances_Failure_NotFound() throws Exception {
-        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME))
+        when(middlewareService.getAccountDetailsByAccountId(ACCOUNT_ID))
                 .thenThrow(new AccountNotFoundMiddlewareException("Account with id=" + ACCOUNT_ID + " not found"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/accounts/balances/{accountId}", ACCOUNT_ID))
@@ -183,7 +187,7 @@ public class AccountResourceTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andReturn();
 
-        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID, DATE_TIME);
+        verify(middlewareService, times(1)).getAccountDetailsByAccountId(ACCOUNT_ID);
     }
 
     @Test
