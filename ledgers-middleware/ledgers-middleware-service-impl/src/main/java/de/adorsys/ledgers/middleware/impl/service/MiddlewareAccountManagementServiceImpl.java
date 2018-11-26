@@ -113,7 +113,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
     }
     private AccountDetailsTO getAccountDetailsByIbanInternal(String iban, LocalDateTime refTime, boolean withBalances) throws AccountNotFoundMiddlewareException {
         try {
-            DepositAccountDetailsBO depositAccountBO = depositAccountService.getDepositAccountByIban(iban, refTime, true);
+            DepositAccountDetailsBO depositAccountBO = depositAccountService.getDepositAccountByIban(iban, refTime, withBalances);
             return accountDetailsMapper.toAccountDetailsTO(depositAccountBO);
         } catch (DepositAccountNotFoundException e) {
             logger.error("Deposit Account with iban={} not found", iban, e);
