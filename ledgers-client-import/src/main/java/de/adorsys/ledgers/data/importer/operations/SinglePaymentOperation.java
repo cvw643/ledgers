@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import de.adorsys.ledgers.data.importer.data.SinglePaymentsData;
 import de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO;
-import de.adorsys.ledgers.middleware.api.domain.sca.SCAPaymentResponseTO;
 import de.adorsys.ledgers.middleware.client.rest.PaymentRestClient;
 
 class SinglePaymentOperation implements ImportOperation{
@@ -30,7 +29,7 @@ class SinglePaymentOperation implements ImportOperation{
 		// Post all bank accounts
 		
 		singlePayments.forEach(pymt -> {
-			SCAPaymentResponseTO resp = paymentRestClient.initiatePayment(PaymentTypeTO.SINGLE, pymt).getBody();
+			paymentRestClient.initiatePayment(PaymentTypeTO.SINGLE, pymt).getBody();
 			// Authorize
 		});
 		OperationResult result = new OperationResult();
@@ -38,7 +37,9 @@ class SinglePaymentOperation implements ImportOperation{
 		return result;
 	}
 	private void assertValidOrException(String bearerToken) {
-		if(StringUtils.isBlank(bearerToken)) throw new IllegalArgumentException("Bearer token is required for creating singlepayments");
+		if(StringUtils.isBlank(bearerToken)) {
+			throw new IllegalArgumentException("Bearer token is required for creating singlepayments");
+		}
 	}
 
 

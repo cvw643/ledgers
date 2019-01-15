@@ -35,8 +35,9 @@ class CreateBankAccountOperation implements ImportOperation {
 	}
 
 	private void assertValidOrException(String bearerToken) {
-		if (StringUtils.isBlank(bearerToken))
-			throw new IllegalArgumentException("Bearer token is required for creating bank accounts");
+		if (StringUtils.isBlank(bearerToken)) {
+			throw new IllegalArgumentException("Bearer token is required for creating bank accounts");			
+		}
 	}
 
 }

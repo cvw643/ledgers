@@ -13,7 +13,9 @@ final class SystemChecker {
 	}
 
 	public SystemChecker validateUrl() {
-		if(StringUtils.isBlank(ledgerUrl))throw new IllegalStateException("Ledger url should not be empty");
+		if(StringUtils.isBlank(ledgerUrl)) {
+			throw new IllegalStateException("Ledger url should not be empty");
+		}
 		return this;
 	}
 
@@ -23,7 +25,9 @@ final class SystemChecker {
 	}
 
 	public SystemChecker validatePath() {
-		if(StringUtils.isBlank(filePath)) throw new IllegalStateException("File path is required");
+		if(StringUtils.isBlank(filePath)) {
+			throw new IllegalStateException("File path is required");
+		}
 		// if(Files.exists(Paths.get(this.filePath))) throw new IllegalStateException("File does not exist");
 		return this;
 	}

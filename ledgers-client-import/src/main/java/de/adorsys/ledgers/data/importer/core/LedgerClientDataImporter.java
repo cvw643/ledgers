@@ -22,8 +22,8 @@ public class LedgerClientDataImporter {
 		// Object Mapper : Convert data read from file to java objects
 		MockbankInitData data = new StreamMapper(stream, MapperType.YAML).mapTo(MockbankInitData.class);
 		// Import Operations : Performs Data Operations
-		boolean processImport = operationProcessor.processImport(data);
+		operationProcessor.processImport(data);
 		// File Manager: Version the file
-		return processImport;
+		return true;
 	}
 }

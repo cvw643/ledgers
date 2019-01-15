@@ -47,7 +47,7 @@ public class OperationFactory {
 
 
 	public ImportOperation newLogoutOperation() {
-		return new LogoutOperation(userMgmtRestClient);
+		return new LogoutOperation();
 	}
 
 

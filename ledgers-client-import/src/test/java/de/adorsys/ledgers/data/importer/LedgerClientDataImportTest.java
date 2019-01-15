@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.Test;
-
 import de.adorsys.ledgers.data.importer.core.ImportOperationProccessor;
 import de.adorsys.ledgers.data.importer.core.LedgerClientDataImporter;
 import de.adorsys.ledgers.data.importer.operations.OperationFactory;

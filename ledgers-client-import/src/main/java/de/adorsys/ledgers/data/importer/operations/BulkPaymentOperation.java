@@ -38,7 +38,9 @@ class BulkPaymentOperation implements ImportOperation{
 		return result;
 	}
 	private void assertValidOrException(String bearerToken) {
-		if(StringUtils.isBlank(bearerToken)) throw new IllegalArgumentException("Bearer token is required for creating bulkPayments");
+		if(StringUtils.isBlank(bearerToken)) {
+			throw new IllegalArgumentException("Bearer token is required for creating bulkPayments");
+		}
 	}
 
 }
