@@ -27,6 +27,7 @@
 		<module>ledgers-sca</module>
 		<module>ledgers-mockbank</module>
 		<module>ledgers-db</module>
+        <module>ledgers-client-import</module>
 	</modules>
 
 	<packaging>pom</packaging>
