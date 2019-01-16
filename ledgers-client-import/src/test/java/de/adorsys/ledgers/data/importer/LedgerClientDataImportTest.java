@@ -11,6 +11,7 @@ import de.adorsys.ledgers.data.importer.core.ImportOperationProccessor;
 import de.adorsys.ledgers.data.importer.core.LedgerClientDataImporter;
 import de.adorsys.ledgers.data.importer.operations.OperationFactory;
 import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;
+import de.adorsys.ledgers.middleware.client.rest.AuthRequestInterceptor;
 import de.adorsys.ledgers.middleware.client.rest.PaymentRestClient;
 import de.adorsys.ledgers.middleware.client.rest.UserMgmtRestClient;
 
@@ -22,14 +23,15 @@ public class LedgerClientDataImportTest {
     	// Required data : user
 		// String ledgerUrl = "http://localhost:8088";
 		
-		String testFilePath = tmpFolder+"mockbank-simple-data-init-data.yml";
-		copyTo("mockbank-simple-data-init-data.yml", testFilePath);
+		String testFilePath = tmpFolder+"mockbank-simple-data.yml";
+		copyTo("mockbank-simple-data.yml", testFilePath);
 		
 		PaymentRestClient paymentRestClient = null;
 		UserMgmtRestClient userMgmtRestClient = null;
 		AccountRestClient accountRestClient = null;
+		AuthRequestInterceptor authRequestInterceptor = null;
 		
-		OperationFactory factory = new OperationFactory(accountRestClient, userMgmtRestClient, paymentRestClient);
+		OperationFactory factory = new OperationFactory(accountRestClient, userMgmtRestClient, paymentRestClient, authRequestInterceptor);
 		ImportOperationProccessor operationProcessor = new ImportOperationProccessor(factory );
 		assertTrue(new LedgerClientDataImporter(operationProcessor ).readFileAndImportData(testFilePath));
     }

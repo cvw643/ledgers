@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import de.adorsys.ledgers.data.importer.data.SinglePaymentsData;
 import de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO;
+import de.adorsys.ledgers.middleware.client.rest.AuthRequestInterceptor;
 import de.adorsys.ledgers.middleware.client.rest.PaymentRestClient;
 
 class SinglePaymentOperation implements ImportOperation{
@@ -14,11 +15,13 @@ class SinglePaymentOperation implements ImportOperation{
 	
 	private final List<SinglePaymentsData> singlePayments;
 	private final PaymentRestClient paymentRestClient;
+	private final  AuthRequestInterceptor authRequestInterceptor;
 	
-	public SinglePaymentOperation(List<SinglePaymentsData> singlePayments, PaymentRestClient paymentRestClient) {
+	public SinglePaymentOperation(List<SinglePaymentsData> singlePayments, PaymentRestClient paymentRestClient, AuthRequestInterceptor authRequestInterceptor) {
 		super();
 		this.singlePayments = singlePayments;
 		this.paymentRestClient = paymentRestClient;
+		this.authRequestInterceptor = authRequestInterceptor;
 	}
 
 	@Override
@@ -29,8 +32,9 @@ class SinglePaymentOperation implements ImportOperation{
 		// Post all bank accounts
 		
 		singlePayments.forEach(pymt -> {
+			// Authorize the feign interceptor
+			authRequestInterceptor.setAccessToken(bearerToken);
 			paymentRestClient.initiatePayment(PaymentTypeTO.SINGLE, pymt).getBody();
-			// Authorize
 		});
 		OperationResult result = new OperationResult();
 		result.put("accessToken", prevResult.get("accessToken"));

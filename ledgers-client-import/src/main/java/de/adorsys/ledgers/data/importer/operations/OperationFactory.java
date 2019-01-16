@@ -11,6 +11,7 @@ import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;
+import de.adorsys.ledgers.middleware.client.rest.AuthRequestInterceptor;
 import de.adorsys.ledgers.middleware.client.rest.PaymentRestClient;
 import de.adorsys.ledgers.middleware.client.rest.UserMgmtRestClient;
 
@@ -20,14 +21,16 @@ public class OperationFactory {
 	private final AccountRestClient accountRestClient;
 	private final UserMgmtRestClient userMgmtRestClient;
 	private final PaymentRestClient paymentRestClient;
+	private final AuthRequestInterceptor authRequestInterceptor;
 	
 	@Autowired
 	public OperationFactory(AccountRestClient accountRestClient, UserMgmtRestClient userMgmtRestClient,
-			PaymentRestClient paymentRestClient) {
+			PaymentRestClient paymentRestClient, AuthRequestInterceptor authRequestInterceptor) {
 		super();
 		this.accountRestClient = accountRestClient;
 		this.userMgmtRestClient = userMgmtRestClient;
 		this.paymentRestClient = paymentRestClient;
+		this.authRequestInterceptor = authRequestInterceptor;
 	}
 
 
@@ -52,12 +55,12 @@ public class OperationFactory {
 
 
 	public ImportOperation newSinglePaymentOperation(List<SinglePaymentsData> singlePayments) {
-		return new SinglePaymentOperation(singlePayments, paymentRestClient);
+		return new SinglePaymentOperation(singlePayments, paymentRestClient, authRequestInterceptor);
 	}
 
 
 	public ImportOperation newBulkPaymentOperation(List<BulkPaymentsData> bulkPayments) {
-		return new BulkPaymentOperation(bulkPayments, paymentRestClient);
+		return new BulkPaymentOperation(bulkPayments, paymentRestClient, authRequestInterceptor);
 	}
 	
 	
