@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {AccountStatus, AccountType, UsageType} from "../../models/account.model";
+import {AccountStatus, AccountType, Currency, UsageType} from "../../models/account.model";
 import {AccountService} from "../../services/account.service";
 import {Router} from "@angular/router";
 
@@ -11,9 +11,9 @@ import {Router} from "@angular/router";
 })
 export class AccountDetailComponent implements OnInit {
   accountForm = new FormGroup({
-    'accountType': new FormControl(null, Validators.required),
-    'usageType': new FormControl(null, Validators.required),
-    'currency': new FormControl(null, Validators.required),
+    'accountType': new FormControl('CASH', Validators.required),
+    'usageType': new FormControl(UsageType.PRIV, Validators.required),
+    'currency': new FormControl(Currency.EUR, Validators.required),
     'iban': new FormControl(null, Validators.required),
     'bban': new FormControl(null),
     'pan': new FormControl(null),
@@ -27,6 +27,7 @@ export class AccountDetailComponent implements OnInit {
     'accountStatus': new FormControl(AccountStatus.ENABLED, Validators.required),
   });
 
+  currencies = Object.keys(Currency)
   accountTypes = Object.keys(AccountType);
   accountStatuses = Object.keys(AccountStatus);
   usageTypes = Object.keys(UsageType);

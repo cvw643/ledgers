@@ -58,6 +58,11 @@ export enum UsageType {
   ORGA = "ORGA",
 }
 
+export enum Currency {
+  EUR = "EUR",
+  USD = "USD"
+}
+
 class AccountBalance {
   amount: Amount;
   balanceType: BalanceType;
