@@ -47,7 +47,10 @@ import de.adorsys.ledgers.sca.domain.SCAOperationBO;
 import de.adorsys.ledgers.sca.domain.ScaStatusBO;
 import de.adorsys.ledgers.sca.exception.*;
 import de.adorsys.ledgers.sca.service.SCAOperationService;
-import de.adorsys.ledgers.um.api.domain.*;
+import de.adorsys.ledgers.um.api.domain.AccessTokenBO;
+import de.adorsys.ledgers.um.api.domain.AisAccountAccessInfoBO;
+import de.adorsys.ledgers.um.api.domain.AisConsentBO;
+import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.exception.InsufficientPermissionException;
 import de.adorsys.ledgers.um.api.exception.UserScaDataNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
@@ -146,12 +149,12 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 		TransactionStatusBO status = scaUtils.hasSCA(userBO) 
 				? TransactionStatusBO.ACCP
 				: TransactionStatusBO.ACTC;
-		String debtorIban = paymentBO.getDebtorAccount().getIban();
+		/*String debtorIban = paymentBO.getDebtorAccount().getIban();
 		Integer signaturesRequired = userBO.getAccountAccesses().stream()
 				                  .filter(a -> a.getIban().equals(debtorIban))
 				                  .findFirst()
 				                  .map(AccountAccessBO::getScaRequiredToAuthorise)
-				                  .orElse(0);
+				                  .orElse(0);*/
 //TODO UNFINISHED! TASK https://git.adorsys.de/adorsys/xs2a/ledgers/issues/171
 
 		paymentBO = persist(paymentBO, status);
