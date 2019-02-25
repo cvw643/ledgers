@@ -23,5 +23,5 @@
 	<!-- 
 	<include file="migration/0005-initial-data-v2.xml" relativeToChangelogFile="true" />
 	 -->
-
+	<include file="migration/0006-scas-required.xml" relativeToChangelogFile="true" />
 </databaseChangeLog>

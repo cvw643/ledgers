@@ -1,19 +1,5 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountBO;
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountDetailsBO;
 import de.adorsys.ledgers.deposit.api.domain.FundsConfirmationRequestBO;
@@ -28,55 +14,31 @@ import de.adorsys.ledgers.middleware.api.domain.payment.AmountTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.ConsentKeyDataTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.SCAConsentResponseTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.ScaStatusTO;
-import de.adorsys.ledgers.middleware.api.domain.um.AccessTokenTO;
-import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
-import de.adorsys.ledgers.middleware.api.domain.um.AisConsentTO;
-import de.adorsys.ledgers.middleware.api.domain.um.ScaUserDataTO;
-import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
-import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
-import de.adorsys.ledgers.middleware.api.exception.AccountMiddlewareUncheckedException;
-import de.adorsys.ledgers.middleware.api.exception.AccountNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.AccountWithPrefixGoneMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.AccountWithSuffixExistsMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.AisConsentNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.InsufficientPermissionMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.PaymentNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAMethodNotSupportedMiddleException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationExpiredMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationUsedOrStolenMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationValidationMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.TransactionNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.UserScaDataNotFoundMiddlewareException;
+import de.adorsys.ledgers.middleware.api.domain.um.*;
+import de.adorsys.ledgers.middleware.api.exception.*;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareAccountManagementService;
-import de.adorsys.ledgers.middleware.impl.converter.AccessTokenMapper;
-import de.adorsys.ledgers.middleware.impl.converter.AccountDetailsMapper;
-import de.adorsys.ledgers.middleware.impl.converter.AisConsentBOMapper;
-import de.adorsys.ledgers.middleware.impl.converter.AmountMapper;
-import de.adorsys.ledgers.middleware.impl.converter.BearerTokenMapper;
-import de.adorsys.ledgers.middleware.impl.converter.PaymentConverter;
-import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
+import de.adorsys.ledgers.middleware.impl.converter.*;
 import de.adorsys.ledgers.sca.domain.AuthCodeDataBO;
 import de.adorsys.ledgers.sca.domain.OpTypeBO;
 import de.adorsys.ledgers.sca.domain.SCAOperationBO;
 import de.adorsys.ledgers.sca.domain.ScaStatusBO;
-import de.adorsys.ledgers.sca.exception.SCAMethodNotSupportedException;
-import de.adorsys.ledgers.sca.exception.SCAOperationExpiredException;
-import de.adorsys.ledgers.sca.exception.SCAOperationNotFoundException;
-import de.adorsys.ledgers.sca.exception.SCAOperationUsedOrStolenException;
-import de.adorsys.ledgers.sca.exception.SCAOperationValidationException;
+import de.adorsys.ledgers.sca.exception.*;
 import de.adorsys.ledgers.sca.service.SCAOperationService;
-import de.adorsys.ledgers.um.api.domain.AccessTypeBO;
-import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
-import de.adorsys.ledgers.um.api.domain.AisConsentBO;
-import de.adorsys.ledgers.um.api.domain.BearerTokenBO;
-import de.adorsys.ledgers.um.api.domain.UserBO;
+import de.adorsys.ledgers.um.api.domain.*;
 import de.adorsys.ledgers.um.api.exception.ConsentNotFoundException;
 import de.adorsys.ledgers.um.api.exception.InsufficientPermissionException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.exception.UserScaDataNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -105,7 +67,6 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 			UserMapper userMapper, AisConsentBOMapper aisConsentMapper, BearerTokenMapper bearerTokenMapper,
 			AccessTokenMapper accessTokenMapper, AccessTokenTO accessToken, SCAOperationService scaOperationService,
 			SCAUtils scaUtils, AccessService accessService, AmountMapper amountMapper) {
-		super();
 		this.depositAccountService = depositAccountService;
 		this.accountDetailsMapper = accountDetailsMapper;
 		this.paymentConverter = paymentConverter;
@@ -122,21 +83,19 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 	}
 
 	@Override
-    public void createDepositAccount(AccountDetailsTO depositAccount)
-            throws UserNotFoundMiddlewareException {
+    public void createDepositAccount(AccountDetailsTO depositAccount) throws UserNotFoundMiddlewareException {
         createDepositAccount(depositAccount, Collections.emptyList());
     }
 
     @Override
-    public void createDepositAccount(AccountDetailsTO depositAccount, List<AccountAccessTO> accountAccesss)
+    public void createDepositAccount(AccountDetailsTO depositAccount, List<AccountAccessTO> accountAccess)
             throws UserNotFoundMiddlewareException {
         try {
             Map<String, UserBO> persistBuffer = new HashMap<>();
-
-            DepositAccountBO depositAccountBO = depositAccountService.createDepositAccount(
-            		accountDetailsMapper.toDepositAccountBO(depositAccount), accessToken.getSub());
-            if (accountAccesss != null) {
-            	accessService.addAccess(accountAccesss, depositAccountBO, persistBuffer);
+	        DepositAccountBO deptAccount = accountDetailsMapper.toDepositAccountBO(depositAccount);
+	        DepositAccountBO persistedDeptAccount = depositAccountService.createDepositAccount(deptAccount, accessToken.getSub());
+            if (accountAccess != null) {
+            	accessService.addAccess(accountAccess, persistedDeptAccount, persistBuffer);
             }
         } catch (DepositAccountNotFoundException e) {
             logger.error(e.getMessage(), e);
@@ -265,7 +224,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		try {
 			createDepositAccount(accDetails, accountAccesses);
 		} catch (UserNotFoundMiddlewareException e) {
-			throw new AccountMiddlewareUncheckedException(String.format("Can not find user with id %s and login", accessToken.getSub(), accessToken.getLogin()));
+			throw new AccountMiddlewareUncheckedException(String.format("Can not find user with id %s and login %s", accessToken.getSub(), accessToken.getLogin()));
 		}
 
 	}
@@ -281,8 +240,8 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		// XOR The user is the owner of this prefix
 		List<AccountAccessTO> accountAccesses = accessToken.getAccountAccesses();
 
-		// EMpty if user is not owner of this prefix.
-		if(accountAccesses ==null || accountAccesses.isEmpty()) {
+		// Empty if user is not owner of this prefix.
+		if(accountAccesses == null || accountAccesses.isEmpty()) {
 			// User can not own any of those accounts.
 			throw new AccountWithPrefixGoneMiddlewareException(String.format("Account prefix %s is gone.", accountNumberPrefix));
 		}
@@ -290,7 +249,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		List<String> ownedAccounts = accessService.filterOwnedAccounts(accountAccesses);
 
 		// user already has account with this prefix and suffix
-		String accNbr = accountNumberPrefix+accountNumberSuffix;
+		String accNbr = accountNumberPrefix + accountNumberSuffix;
 		if(ownedAccounts.contains(accNbr)) {
 			throw new AccountWithSuffixExistsMiddlewareException(String.format("Account with suffix %S and prefix %s already exist", accountNumberPrefix, accountNumberSuffix));
 		}
@@ -304,8 +263,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 	}
 
 	@Override
-	public void grantAccessToDepositAccount(AccountAccessTO accountAccess)
-			throws AccountNotFoundMiddlewareException, InsufficientPermissionMiddlewareException {
+	public void grantAccessToDepositAccount(AccountAccessTO accountAccess) throws InsufficientPermissionMiddlewareException {
         UserBO userBo = accessService.loadCurrentUser();
         // Check that current user owns the account.
         List<String> ownedAccounts = accessService.filterOwnedAccounts(accessToken.getAccountAccesses());
@@ -457,7 +415,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 			BearerTokenBO consentToken = userService.consentToken(accessTokenMapper.toAccessTokenBO(accessToken),consentBO);
 			SCAConsentResponseTO response = new SCAConsentResponseTO();
 			response.setBearerToken(bearerTokenMapper.toBearerTokenTO(consentToken));
-			response.setAuthorisationId(scaUtils.authorisatioId());
+			response.setAuthorisationId(scaUtils.authorisationId());
 			response.setConsentId(aisConsent.getId());
 			response.setPsuMessage(consentKeyData.exemptedTemplate());
 			response.setScaStatus(ScaStatusTO.EXEMPTED);
@@ -507,7 +465,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 	private SCAConsentResponseTO prepareSCA(UserBO user, AisConsentTO aisConsent, ConsentKeyDataTO consentKeyData) {
 		String consentKeyDataTemplate = consentKeyData.template();
 		UserTO userTo =scaUtils.user(user);
-		String authorisationId = scaUtils.authorisatioId();
+		String authorisationId = scaUtils.authorisationId();
 		if (!scaRequired(aisConsent, user, OpTypeBO.CONSENT)) {
 			SCAConsentResponseTO response = new SCAConsentResponseTO();
 			response.setAuthorisationId(authorisationId);
@@ -541,9 +499,8 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		}
 	}
 
-	private SCAConsentResponseTO toScaConsentResponse(UserTO user,
-			AisConsentBO consent, String messageTemplate, SCAOperationBO operation) {
-		SCAConsentResponseTO response = new SCAConsentResponseTO();
+	private SCAConsentResponseTO toScaConsentResponse(UserTO user, AisConsentBO consent, String messageTemplate, SCAOperationBO operation) {
+		SCAConsentResponseTO response = new SCAConsentResponseTO(); //TODO - matter of refactoring
 		response.setAuthorisationId(operation.getId());
 		response.setChosenScaMethod(scaUtils.getScaMethod(user, operation.getScaMethodId()));
 		response.setChallengeData(null);
@@ -555,6 +512,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		response.setScaStatus(ScaStatusTO.valueOf(operation.getScaStatus().name()));
 		return response;
 	}
+
 	private AisConsentBO consent(String consentId) throws AisConsentNotFoundMiddlewareException {
 		try {
 			return userService.loadConsent(consentId);
