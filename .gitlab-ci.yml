@@ -83,7 +83,7 @@ variables: &variables
 
 .build_java: &build_java
   stage: "build:src"
-  image: "adorsys/openjdk-build-base:8"
+  image: "adorsys/ci-build"
   script:
   - cat /sys/fs/cgroup/memory/memory.limit_in_bytes
   - java -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"
@@ -118,24 +118,6 @@ variables: &variables
   - docker login -u openshift -p $OPENSHIFT_TOKEN $OPENSHIFT_REGISTRY
   - docker push "$OPENSHIFT_IMAGE_NAME_LEDGERS:$DOCKER_TAG"
 
-#.helm_env_deploy: &helm_env_deploy
-#  image: adorsys/ci-helm:2.10
-#  script:
-#  - cd devops/charts/xs2a
-#  - helm init --client-only
-#  - oc login openshift.adorsys.de --token=${HELM_TOKEN}
-#  - echo "${VAULT_PWD}" > $ANSIBLE_VAULT_PASSWORD_FILE
-#  - ansible-vault view env/${HELM_VALUE}.enc > env/${HELM_VALUE}
-#  - >-
-#    helm diff upgrade ${HELM_RELEASE} .
-#    --allow-unreleased -q
-#    -f env/${HELM_VALUE}
-#  - >-
-#    helm upgrade -i ${HELM_RELEASE} .
-#    --namespace=${OPENSHIFT_NAMESPACE} --wait --timeout=600
-#    -f env/${HELM_VALUE}
-
-
 # ------------------------------------------------------------------
 # jobs
 # ------------------------------------------------------------------
@@ -148,7 +130,7 @@ build_package:
 
 pmd_report:
   stage: "build:src"
-  image: "adorsys/openjdk-build-base:8"
+  image: "adorsys/ci-build"
   script:
   - cat /sys/fs/cgroup/memory/memory.limit_in_bytes
   - java -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"
@@ -163,7 +145,7 @@ pmd_report:
 
 check_pmd:
   stage: "build:qa"
-  image: "adorsys/openjdk-build-base:8"
+  image: "adorsys/ci-build"
   script:
   - cat /sys/fs/cgroup/memory/memory.limit_in_bytes
   - java -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"
@@ -171,7 +153,7 @@ check_pmd:
 
 check_javadoc:
   stage: "build:qa"
-  image: "adorsys/openjdk-build-base:8"
+  image: "adorsys/ci-build"
   script:
   - cat /sys/fs/cgroup/memory/memory.limit_in_bytes
   - java -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"
@@ -184,14 +166,15 @@ check_javadoc:
 
 unit_tests:
   stage: "build:qa"
-  image: "adorsys/openjdk-build-base:8"
+  image: "adorsys/ci-build"
   script:
-  - cat /sys/fs/cgroup/memory/memory.limit_in_bytes
-  - java -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"
-  - mvn --fail-at-end clean install
+    - jabba use 8
+    - cat /sys/fs/cgroup/memory/memory.limit_in_bytes
+    - java -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"
+    - mvn --fail-at-end clean install
   artifacts:
     paths:
-    - "**/target/surefire-reports/*"
+      - "**/target/surefire-reports/*"
     name: "$CI_PROJECT_NAME-${CI_BUILD_REF_NAME#*v}-*"
     expire_in: "10 day"
 

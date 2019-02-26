@@ -3,7 +3,7 @@ language: java
 
 jdk:
   - oraclejdk8
-#  - openjdk11
+  - openjdk11
 
 git:
   submodules: false
@@ -23,9 +23,10 @@ install:
 before_script:
   - mvn --version
 
+# JavaDocs are broken in Java 11 and fixed only in Java 12 : https://bugs.openjdk.java.net/browse/JDK-8212233
 script:
   - mvn -B -V clean install
-  - mvn -B -V javadoc:javadoc
+  - "if [ $TRAVIS_JDK_VERSION == oraclejdk8 ]; then mvn -B -V javadoc:javadoc; fi;"
   - mvn -B -V pmd:check
 
 # Schritte um Release zu veröffentlichen
