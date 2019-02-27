@@ -98,10 +98,10 @@ spring:
 spring:
   profiles: dev
 
-logging.level.org.postgresql: WARN
-logging.level.org.hibernate.SQL: WARN
-logging.level.org.hibernate.type.descriptor.sql.BasicBinder: WARN
-logging.level.org.springframework: WARN
+logging.level.org.postgresql: INFO
+logging.level.org.hibernate.SQL: DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+logging.level.org.springframework: TRACE
 
 management.endpoints.web.exposure.include: "*"
 management.endpoints.web.exposure.exclude: env,beans
