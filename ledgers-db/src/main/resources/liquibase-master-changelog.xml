@@ -23,5 +23,13 @@
 	<!-- 
 	<include file="migration/0005-initial-data-v2.xml" relativeToChangelogFile="true" />
 	 -->
-	<include file="migration/0006-scas-required.xml" relativeToChangelogFile="true" />
+
+	<!--add branch to users table-->
+	<include file="migration/0006-add-branch-to-users-table.xml" relativeToChangelogFile="true" />
+
+	<!--add branch to deposit account-->
+	<include file="migration/0007-add-branch-to-deposit-account-table.xml" relativeToChangelogFile="true" />
+
+    <!--add required numbers of scas for current user and sertain account-->
+    <include file="migration/0008-scas-required.xml" relativeToChangelogFile="true" />
 </databaseChangeLog>

@@ -1,0 +1,18 @@
+label {
+  display: block;
+}
+
+.container {
+  max-width: 50em;
+}
+
+
+.form-group.required .control-label:after {
+  content:" *";
+  color:red;
+}
+
+.btn-primary {
+  background-color: #054f72;
+  color: white;
+}
