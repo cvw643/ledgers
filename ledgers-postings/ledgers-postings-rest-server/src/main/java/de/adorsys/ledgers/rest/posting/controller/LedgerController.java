@@ -28,8 +28,8 @@ public class LedgerController {
     /**
      * Creates a new Ledger.
      *
-     * @param ledger
-     * @return
+     * @param ledger Ledger object
+     * @return void response with HttpStatus 201 if successful
      */
     @PostMapping(path = "/ledgers")
     public ResponseEntity<Void> newLedger(LedgerBO ledger, UriBuilder uri) {
@@ -52,8 +52,8 @@ public class LedgerController {
     /**
      * Find the ledger with the given name.
      *
-     * @param ledgerName
-     * @return
+     * @param ledgerName name of corresponding Ledger
+     * @return Ledger object
      */
     @GetMapping(path = "/ledgers", params = {"ledgerName"})
     public ResponseEntity<LedgerBO> findLedgerByName(@RequestParam(required = true, name = "ledgerName") String ledgerName) {
@@ -66,8 +66,8 @@ public class LedgerController {
      * <p>
      * While creating a ledger account, the parent hat to be specified.
      *
-     * @param ledgerAccount
-     * @return
+     * @param ledgerAccount Ledger account
+     * @return Void response with 201 HttpStatus if successful
      */
     @PostMapping(path = "/accounts")
     public ResponseEntity<Void> newLedgerAccount(@RequestBody LedgerAccountBO ledgerAccount, UriBuilder uri) {
@@ -90,8 +90,8 @@ public class LedgerController {
     /**
      * Find the ledger account with the given ledger name and account name and reference date.
      *
-     * @param ledgerName
-     * @param accountName
+     * @param ledgerName name of ledger
+     * @param accountName name of account
      * @return
      * @throws LedgerNotFoundException
      */
