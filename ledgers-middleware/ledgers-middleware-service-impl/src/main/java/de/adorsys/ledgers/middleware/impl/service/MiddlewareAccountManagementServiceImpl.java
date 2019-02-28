@@ -42,15 +42,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -107,7 +98,6 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
             logger.error(e.getMessage(), e);
             throw new UserNotFoundMiddlewareException();
         }
-    }
     }
 
     @Override
@@ -370,7 +360,7 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 	@Override
 	@SuppressWarnings("PMD.IdenticalCatchBranches")
 	public SCAConsentResponseTO selectSCAMethodForAisConsent(String consentId, String authorisationId,
-			String scaMethodId) throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException,
+			String scaMethodId) throws SCAMethodNotSupportedMiddleException,
 			UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
 			SCAOperationNotFoundMiddlewareException, AisConsentNotFoundMiddlewareException {
 		UserBO userBO = scaUtils.userBO();
@@ -379,8 +369,8 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 		AisConsentTO aisConsentTO = aisConsentMapper.toAisConsentTO(consent);
 		ConsentKeyDataTO consentKeyData = new ConsentKeyDataTO(aisConsentTO);
 		String template = consentKeyData.template();
-		AuthCodeDataBO a = new AuthCodeDataBO(userBO.getLogin(), scaMethodId, 
-				consentId, template, template, 
+		AuthCodeDataBO a = new AuthCodeDataBO(userBO.getLogin(), scaMethodId,
+				consentId, template, template,
 				defaultLoginTokenExpireInSeconds, OpTypeBO.CONSENT, authorisationId);
 		try {
 			SCAOperationBO scaOperationBO = scaOperationService.generateAuthCode(a, userBO, ScaStatusBO.SCAMETHODSELECTED);
@@ -508,9 +498,9 @@ public class MiddlewareAccountManagementServiceImpl implements MiddlewareAccount
 			response.setStatusDate(LocalDateTime.now());
 			return response;
 		} else {
-			AuthCodeDataBO authCodeData = new AuthCodeDataBO(user.getLogin(), 
-					aisConsent.getId(), aisConsent.getId(), 
-					consentKeyDataTemplate, consentKeyDataTemplate, 
+			AuthCodeDataBO authCodeData = new AuthCodeDataBO(user.getLogin(),
+					aisConsent.getId(), aisConsent.getId(),
+					consentKeyDataTemplate, consentKeyDataTemplate,
 					defaultLoginTokenExpireInSeconds, OpTypeBO.CONSENT, authorisationId);
 			// start SCA
 			SCAOperationBO scaOperationBO;
