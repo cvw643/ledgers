@@ -1,6 +1,5 @@
 package de.adorsys.ledgers.data.upload.service;
 
-import com.sun.javafx.binding.StringFormatter;
 import de.adorsys.ledgers.data.upload.model.AccountBalance;
 import de.adorsys.ledgers.data.upload.model.DataPayload;
 import de.adorsys.ledgers.data.upload.resource.TppDataUploadResource;
@@ -55,9 +54,9 @@ public class RestExecutionService {
             try {
                 user = userRestClient.createUser(user).getBody();
             } catch (FeignException f) {
-                String msg = StringFormatter.format("User: %s probably already exists", user.getLogin()).getValue();
+                String msg = String.format("User: %s probably already exists", user.getLogin());
                 if (f.status() == 500 || f.status() == 403) {
-                    msg = StringFormatter.format("Connection problem %s", f.getMessage()).getValue();
+                    msg = String.format("Connection problem %s", f.getMessage());
                     logger.error(msg);
                     return false;
                 }
