@@ -19,6 +19,10 @@ server:
 
 spring:
   application.name: ledgers
+  servlet.multipart.enabled: true
+  servlet.multipart.file-size-threshold: 2KB
+  servlet.multipart.max-file-size: 2MB
+  servlet.multipart.max-request-size: 2MB
   datasource:
     username: ${db.user}
     password: ${db.password}
@@ -100,6 +104,7 @@ db:
   port: 5432
   url: jdbc:postgresql://${db.host}:${db.port}/${db.database}
 ledgers.mockbank.data.load: true
+ledgers.data-upload.enabled: true
 ---
 # hibernate-ddl profile is used to fully initialize the database
 # from ddl generation and rest based upload of test data.
@@ -128,6 +133,7 @@ db:
 # Load mock data. Turn this off after the first load for faster roundtrip development.
 # as JVM -Dledgers.mockbank.data.load=false or as spring application param: --ledgers.mockbank.data.load=false
 ledgers.mockbank.data.load: true
+ledgers.data-upload.enabled: true
 
 # Default value set in application. de.adorsys.ledgers.middleware.client.rest.Ledgers#URL.LEDGERS_URL
 # ledgers.url: http://localhost:${server.port}
