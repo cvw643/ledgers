@@ -1,12 +1,16 @@
 package de.adorsys.ledgers.data.upload.model;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Currency;
 
 public class AccountBalance {
     private String accountId;
+    @NotNull
     private String iban;
+    @NotNull
     private Currency currency;
+    @NotNull
     private BigDecimal amount;
 
     public AccountBalance() {

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collection;
 
 @Service
 public class ParseService {
@@ -17,10 +18,23 @@ public class ParseService {
 
     public DataPayload getDataFromFile(MultipartFile input) {
         try {
-            return objectMapper.readValue(input.getInputStream(), DataPayload.class);
+            DataPayload payload = objectMapper.readValue(input.getInputStream(), DataPayload.class);
+            return checkPayload(payload)
+                           ? payload
+                           : null;
         } catch (IOException e) {
             logger.error("Could not map file to Object. \n {}", e.getMessage());
             return null;
         }
+    }
+
+    private boolean checkPayload(DataPayload payload) {
+        return containsNotNullObjs(payload.getAccounts())
+                       && containsNotNullObjs(payload.getBalancesList())
+                       && containsNotNullObjs(payload.getUsers());
+    }
+
+    private boolean containsNotNullObjs(Collection collection) {
+        return collection == null || !collection.contains(null);
     }
 }

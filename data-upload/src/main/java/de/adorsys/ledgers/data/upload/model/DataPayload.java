@@ -3,11 +3,15 @@ package de.adorsys.ledgers.data.upload.model;
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public class DataPayload {
+    @NotNull
     private List<UserTO> users;
+    @NotNull
     private List<AccountDetailsTO> accounts;
+    @NotNull
     private List<AccountBalance> balancesList;
 
     public DataPayload() {

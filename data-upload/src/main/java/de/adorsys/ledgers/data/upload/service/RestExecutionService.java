@@ -69,10 +69,10 @@ public class RestExecutionService {
     }
 
     private void initialiseDataSets(DataPayload payload) {
-        users = payload.getUsers();
-        payload.getAccounts()
+        users = Optional.ofNullable(payload.getUsers()).orElse(Collections.emptyList());
+        Optional.ofNullable(payload.getAccounts()).orElse(Collections.emptyList())
                 .forEach(a -> details.put(a.getIban(), a));
-        payload.getBalancesList()
+        Optional.ofNullable(payload.getBalancesList()).orElse(Collections.emptyList())
                 .forEach(b -> balances.put(b.getIban(), b));
     }
 
