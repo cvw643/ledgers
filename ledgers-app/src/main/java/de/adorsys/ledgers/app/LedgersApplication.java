@@ -16,7 +16,6 @@
 
 package de.adorsys.ledgers.app;
 
-import de.adorsys.ledgers.data.upload.resource.TppDataUploadResource;
 import de.adorsys.ledgers.data.upload.service.EnableBatchDataUploadForTpp;
 import de.adorsys.ledgers.deposit.api.service.EnableDepositAccountService;
 import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;
@@ -60,9 +59,6 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
     @Value("${ledgers.mockbank.data.load:false}")
     private boolean loadMockData;
 
-    @Value("${ledgers.data-upload.enabled:false}")
-    private boolean enableTppUpload;
-
     public static void main(String[] args) {
         new SpringApplicationBuilder(LedgersApplication.class).run(args);
     }
@@ -71,9 +67,6 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
     public void onApplicationEvent(@NotNull ApplicationReadyEvent event) {
         if (loadMockData) {
             context.getBean(MockBankSimpleInitService.class).runInit();
-        }
-        if (enableTppUpload) {
-            context.getBean(TppDataUploadResource.class);
         }
     }
 
