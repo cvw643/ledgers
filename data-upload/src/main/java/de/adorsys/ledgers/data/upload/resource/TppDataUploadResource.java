@@ -39,14 +39,14 @@ public class TppDataUploadResource {
 
     @ApiOperation(value = "Upload YAML file along with TPP-login and pass", authorizations = @Authorization(value = "apiKey"))
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadYamlData(HttpServletRequest srv, @RequestBody MultipartFile request) {
-        logger.info("Update request received");
-        DataPayload parsed = parseService.getDataFromFile(request);
+    public ResponseEntity<String> uploadYamlData(HttpServletRequest request, @RequestBody MultipartFile file) {
+        logger.info("Update file received");
+        DataPayload parsed = parseService.getDataFromFile(file);
         if (parsed == null) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Could not parse data");
         }
         logger.info("Read data is successful");
-        return restExecutionService.updateLedgers(srv.getHeader("Authorization"), parsed)
+        return restExecutionService.updateLedgers(request.getHeader("Authorization"), parsed)
                        ? ResponseEntity.status(HttpStatus.OK).body("Data successfully updated")
                        : ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Could not update data.");
     }

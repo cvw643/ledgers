@@ -2,6 +2,7 @@ package de.adorsys.ledgers.data.upload.service;
 
 import de.adorsys.ledgers.data.upload.model.AccountBalance;
 import de.adorsys.ledgers.data.upload.model.DataPayload;
+import de.adorsys.ledgers.data.upload.model.UploadedData;
 import de.adorsys.ledgers.data.upload.resource.TppDataUploadResource;
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.AmountTO;
@@ -16,7 +17,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RestExecutionService {
@@ -25,10 +30,6 @@ public class RestExecutionService {
     private final AuthRequestInterceptor authRequestInterceptor;
     private final AccountMgmtStaffRestClient accountRestClient;
     private final UserMgmtStaffRestClient userRestClient;
-
-    private List<UserTO> users = new ArrayList<>();
-    private Map<String, AccountDetailsTO> details = new HashMap<>(); // k-> IBAN, v->Details
-    private Map<String, AccountBalance> balances = new HashMap<>();  // k-> IBAN, v->Balance
 
     public RestExecutionService(AuthRequestInterceptor authRequestInterceptor, AccountMgmtStaffRestClient accountRestClient, UserMgmtStaffRestClient userRestClient) {
         this.authRequestInterceptor = authRequestInterceptor;
@@ -45,12 +46,26 @@ public class RestExecutionService {
     }
 
     private boolean doUpdate(DataPayload payload) {
-        initialiseDataSets(payload);
-        return updateUsers() && updateBalances();
+        UploadedData data = initialiseDataSets(payload);
+        return updateUsers(data) && updateBalances(data);
     }
 
-    private boolean updateUsers() {
-        for (UserTO user : users) {
+    private UploadedData initialiseDataSets(DataPayload payload) {
+        List<UserTO> users = Optional.ofNullable(payload.getUsers())
+                                     .orElse(Collections.emptyList());
+        Map<String, AccountDetailsTO> accounts = Optional.ofNullable(payload.getAccounts())
+                                                         .orElse(Collections.emptyList())
+                                                         .stream()
+                                                         .collect(Collectors.toMap(AccountDetailsTO::getIban, a -> a));
+        Map<String, AccountBalance> balances = Optional.ofNullable(payload.getBalancesList())
+                                                       .orElse(Collections.emptyList())
+                                                       .stream()
+                                                       .collect(Collectors.toMap(AccountBalance::getIban, b -> b));
+        return new UploadedData(users, accounts, balances);
+    }
+
+    private boolean updateUsers(UploadedData data) {
+        for (UserTO user : data.getUsers()) {
             try {
                 user = userRestClient.createUser(user).getBody();
             } catch (FeignException f) {
@@ -63,20 +78,12 @@ public class RestExecutionService {
                 logger.error(msg);
             }
             Optional.ofNullable(user)
-                    .ifPresent(u -> createAccountsForUser(u.getId(), u.getAccountAccesses()));
+                    .ifPresent(u -> createAccountsForUser(u.getId(), u.getAccountAccesses(), data.getDetails()));
         }
         return true;
     }
 
-    private void initialiseDataSets(DataPayload payload) {
-        users = Optional.ofNullable(payload.getUsers()).orElse(Collections.emptyList());
-        Optional.ofNullable(payload.getAccounts()).orElse(Collections.emptyList())
-                .forEach(a -> details.put(a.getIban(), a));
-        Optional.ofNullable(payload.getBalancesList()).orElse(Collections.emptyList())
-                .forEach(b -> balances.put(b.getIban(), b));
-    }
-
-    private void createAccountsForUser(String userId, List<AccountAccessTO> accesses) {
+    private void createAccountsForUser(String userId, List<AccountAccessTO> accesses, Map<String, AccountDetailsTO> details) {
         accesses.stream()
                 .map(access -> details.get(access.getIban()))
                 .forEach(account -> createAccount(userId, account));
@@ -91,12 +98,12 @@ public class RestExecutionService {
         }
     }
 
-    private boolean updateBalances() {
+    private boolean updateBalances(UploadedData data) {
         try {
             List<AccountDetailsTO> accountsAtLedgers = Optional.ofNullable(accountRestClient.getListOfAccounts().getBody())
                                                                .orElse(Collections.emptyList());
             accountsAtLedgers
-                    .forEach(this::updateBalanceIfPresent);
+                    .forEach(a -> updateBalanceIfPresent(a, data.getBalances()));
             return true;
         } catch (FeignException e) {
             logger.error("Could not retrieve accounts from Ledgers");
@@ -104,7 +111,7 @@ public class RestExecutionService {
         }
     }
 
-    private void updateBalanceIfPresent(AccountDetailsTO detail) {
+    private void updateBalanceIfPresent(AccountDetailsTO detail, Map<String, AccountBalance> balances) {
         try {
             Optional.ofNullable(accountRestClient.getAccountDetailsById(detail.getId()).getBody())
                     .ifPresent(d -> calculateDifAndUpdate(d, balances.get(d.getIban())));
