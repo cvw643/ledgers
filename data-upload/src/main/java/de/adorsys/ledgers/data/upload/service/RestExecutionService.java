@@ -61,6 +61,7 @@ public class RestExecutionService {
                                                        .orElse(Collections.emptyList())
                                                        .stream()
                                                        .collect(Collectors.toMap(AccountBalance::getIban, b -> b));
+
         return new UploadedData(users, accounts, balances);
     }
 
@@ -78,14 +79,20 @@ public class RestExecutionService {
                 logger.error(msg);
             }
             Optional.ofNullable(user)
-                    .ifPresent(u -> createAccountsForUser(u.getId(), u.getAccountAccesses(), data.getDetails()));
+                    .ifPresent(u -> {
+                        if (!data.getDetails().isEmpty()) {
+                            createAccountsForUser(u.getId(), u.getAccountAccesses(), data.getDetails());
+                        }
+                    });
         }
         return true;
     }
 
     private void createAccountsForUser(String userId, List<AccountAccessTO> accesses, Map<String, AccountDetailsTO> details) {
         accesses.stream()
-                .map(access -> details.get(access.getIban()))
+                .map(access -> Optional.ofNullable(details.get(access.getIban())))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .forEach(account -> createAccount(userId, account));
 
     }
@@ -99,6 +106,9 @@ public class RestExecutionService {
     }
 
     private boolean updateBalances(UploadedData data) {
+        if (data.getBalances().isEmpty()) {
+            return true;
+        }
         try {
             List<AccountDetailsTO> accountsAtLedgers = Optional.ofNullable(accountRestClient.getListOfAccounts().getBody())
                                                                .orElse(Collections.emptyList());
@@ -114,7 +124,8 @@ public class RestExecutionService {
     private void updateBalanceIfPresent(AccountDetailsTO detail, Map<String, AccountBalance> balances) {
         try {
             Optional.ofNullable(accountRestClient.getAccountDetailsById(detail.getId()).getBody())
-                    .ifPresent(d -> calculateDifAndUpdate(d, balances.get(d.getIban())));
+                    .ifPresent(d -> calculateDifAndUpdate(d, Optional.ofNullable(balances.get(d.getIban()))
+                                                                     .orElse(getZeroBalance(d))));
         } catch (FeignException f) {
             logger.error("Could not retrieve balances for account: %s", detail.getIban());
         }
@@ -135,5 +146,9 @@ public class RestExecutionService {
                 logger.error("Could not update balances for: %s with amount:", detail.getIban(), amount);
             }
         }
+    }
+
+    private AccountBalance getZeroBalance(AccountDetailsTO details) {
+        return new AccountBalance(null, details.getIban(), details.getCurrency(), BigDecimal.ZERO);
     }
 }
