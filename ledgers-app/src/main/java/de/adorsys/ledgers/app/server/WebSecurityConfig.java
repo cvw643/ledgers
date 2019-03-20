@@ -1,9 +1,10 @@
 package de.adorsys.ledgers.app.server;
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Optional;
-
+import de.adorsys.ledgers.app.server.config.cors.CorsConfigProperties;
+import de.adorsys.ledgers.middleware.api.domain.um.AccessTokenTO;
+import de.adorsys.ledgers.middleware.rest.security.JWTAuthenticationFilter;
+import de.adorsys.ledgers.middleware.rest.security.MiddlewareAuthentication;
+import de.adorsys.ledgers.middleware.rest.security.TokenAuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,20 +21,20 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import de.adorsys.ledgers.middleware.api.domain.um.AccessTokenTO;
-import de.adorsys.ledgers.middleware.rest.security.JWTAuthenticationFilter;
-import de.adorsys.ledgers.middleware.rest.security.MiddlewareAuthentication;
-import de.adorsys.ledgers.middleware.rest.security.TokenAuthenticationService;
+import java.security.Principal;
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final TokenAuthenticationService tokenAuthenticationService;
+    private final CorsConfigProperties configProperties;
 
     @Autowired
-    public WebSecurityConfig(TokenAuthenticationService tokenAuthenticationService) {
+    public WebSecurityConfig(TokenAuthenticationService tokenAuthenticationService, CorsConfigProperties configProperties) {
         this.tokenAuthenticationService = tokenAuthenticationService;
+        this.configProperties = configProperties;
     }
 
     @Override
@@ -94,9 +95,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE"));
-
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(configProperties.getAllowedOrigins());
+        configuration.setAllowedHeaders(configProperties.getAllowedHeaders());
+        configuration.setAllowedMethods(configProperties.getAllowedMethods());
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
