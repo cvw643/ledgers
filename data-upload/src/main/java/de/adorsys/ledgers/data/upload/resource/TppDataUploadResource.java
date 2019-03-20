@@ -66,16 +66,11 @@ public class TppDataUploadResource {
         try {
             byte[] bytes = generationService.generate(request.getHeader("Authorization"));
             InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(bytes));
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-            headers.add("Pragma", "no-cache");
-            headers.add("Expires", "0");
-
+            HttpHeaders headers = getExportFileHttpHeaders();
             return ResponseEntity.ok()
                            .headers(headers)
                            .contentLength(bytes.length)
-                           .contentType(MediaType.parseMediaType("application/octet-stream"))
+                           .contentType(MediaType.APPLICATION_OCTET_STREAM)
                            .body(resource);
         } catch (UserNotFoundMiddlewareException e) {
             logger.error("User could not be found");
@@ -84,5 +79,13 @@ public class TppDataUploadResource {
             logger.error("Default file template could not be found.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
+    }
+
+    private HttpHeaders getExportFileHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        return headers;
     }
 }

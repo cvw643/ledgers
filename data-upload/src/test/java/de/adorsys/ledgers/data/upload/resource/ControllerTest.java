@@ -184,7 +184,7 @@ public class ControllerTest {
             UserCredentialsTO credentials = new UserCredentialsTO(user.getLogin(), user.getPin(), user.getUserRoles().stream().findFirst().get());
             return tmpl.postForEntity("http://localhost:8088/staff-access/users/login", credentials, SCALoginResponseTO.class).getBody().getBearerToken().getAccess_token();
         } catch (RestClientException e) {
-            logger.error("An error occurred during login: %s", e.getLocalizedMessage());
+            logger.error("An error occurred during login: {}", user.getLogin(), e.getLocalizedMessage());
             return null;
         }
     }
@@ -196,7 +196,7 @@ public class ControllerTest {
          return new CommonsMultipartFile(new DiskFileItem("name", "yml",false, testDataFile,100000000,new InputStreamResource(resource).getFile()));
             //IOUtils.toByteArray(resource);
         } catch (IOException e) {
-            logger.error("Could not read file, message is: \n", e.getLocalizedMessage());
+            logger.error("Could not read file, message is: \n ", e.getLocalizedMessage());
             return null;
         }
     }

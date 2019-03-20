@@ -3,6 +3,7 @@ package de.adorsys.ledgers.data.upload.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import de.adorsys.ledgers.data.upload.model.DataPayload;
+import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,13 +43,12 @@ public class ParseService {
         }
     }
 
-
     public byte[] getFile(DataPayload data) {
         try {
             return objectMapper.writeValueAsBytes(data);
         } catch (IOException e) {
             logger.error("Could not write bytes");
-            return null;
+            return new byte[]{};
         }
     }
 
@@ -56,7 +56,8 @@ public class ParseService {
         return containsNotNullObjs(payload.getAccounts())
                        && containsNotNullObjs(payload.getBalancesList())
                        && containsNotNullObjs(payload.getUsers())
-                       && payload.getUsers().stream().noneMatch(u -> u.getUserRoles() == null || u.getUserRoles().isEmpty());
+                       && payload.getUsers().stream()
+                                  .noneMatch(UserTO::userHasRoles);
     }
 
     private boolean containsNotNullObjs(Collection collection) {

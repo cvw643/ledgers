@@ -9,6 +9,7 @@ import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -43,19 +44,29 @@ public class TestsDataGenerationService {
     }
 
     private DataPayload generateData(DataPayload data, String branch) {
-        Map<String, AccountDetailsTO> detailsMap = Optional.ofNullable(data.getAccounts()).orElse(Collections.emptyList()).stream()
+        Map<String, AccountDetailsTO> detailsMap = getNotNullList(data.getAccounts()).stream()
                                                            .map(a -> generateDetails(a, branch))
-                                                           .collect(Collectors.toMap(a -> a.getIban().substring(a.getIban().length() - 2), a -> a));
+                                                           .collect(Collectors.toMap(this::getLastTwoSymbols, a -> a));
         data.setAccounts(new ArrayList<>(detailsMap.values()));
-        List<AccountBalance> balances = Optional.ofNullable(data.getBalancesList()).orElse(Collections.emptyList()).stream()
+        List<AccountBalance> balances = getNotNullList(data.getBalancesList()).stream()
                                                 .map(b -> generateBalances(b, branch, detailsMap))
                                                 .collect(Collectors.toList());
         data.setBalancesList(balances);
-        List<UserTO> users = Optional.ofNullable(data.getUsers()).orElse(Collections.emptyList()).stream()
+        List<UserTO> users = getNotNullList(data.getUsers()).stream()
                                      .map(u -> generateUsers(u, branch, detailsMap))
                                      .collect(Collectors.toList());
         data.setUsers(users);
         return data;
+    }
+
+    private <T> List<T> getNotNullList(List<T> list) {
+        return Optional.ofNullable(list).orElse(Collections.emptyList());
+    }
+
+    @NotNull
+    private String getLastTwoSymbols(AccountDetailsTO a) {
+        return a.getIban()
+                       .substring(a.getIban().length() - 2);
     }
 
     private AccountBalance generateBalances(AccountBalance balance, String branch, Map<String, AccountDetailsTO> detailsMap) {
@@ -71,14 +82,19 @@ public class TestsDataGenerationService {
     }
 
     private UserTO generateUsers(UserTO user, String branch, Map<String, AccountDetailsTO> detailsMap) {
-        user.setId(branch + "_" + user.getId());
-        user.setEmail(branch + "_" + user.getEmail());
-        user.setLogin(branch + "_" + user.getLogin());
+        user.setId(addBranchPrefix(branch, user.getId()));
+        user.setEmail(addBranchPrefix(branch, user.getEmail()));
+        user.setLogin(addBranchPrefix(branch, user.getLogin()));
         user.getScaUserData()
-                .forEach(d -> d.setMethodValue(branch + "_" + d.getMethodValue()));
+                .forEach(d -> d.setMethodValue(addBranchPrefix(branch, d.getMethodValue())));
         user.getAccountAccesses()
                 .forEach(a -> a.setIban(getGeneratedIbanOrNew(a.getIban(), branch, detailsMap)));
         return user;
+    }
+
+    @NotNull
+    private String addBranchPrefix(String branch, String concatObj) {
+        return branch + "_" + concatObj;
     }
 
     private String generateIban(String branch, String iban) {
@@ -86,7 +102,8 @@ public class TestsDataGenerationService {
     }
 
     private String getGeneratedIbanOrNew(String iban, String branch, Map<String, AccountDetailsTO> detailsMap) {
-        return Optional.ofNullable(detailsMap.get(iban).getIban())
-                       .orElseGet(() -> generateIban(branch, iban));
+        return detailsMap.containsKey(iban)
+                       ? detailsMap.get(iban).getIban()
+                       : generateIban(branch, iban);
     }
 }
