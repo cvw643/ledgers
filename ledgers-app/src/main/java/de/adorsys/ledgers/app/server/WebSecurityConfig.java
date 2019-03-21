@@ -1,6 +1,5 @@
 package de.adorsys.ledgers.app.server;
 
-import de.adorsys.ledgers.app.server.config.cors.CorsConfigProperties;
 import de.adorsys.ledgers.middleware.api.domain.um.AccessTokenTO;
 import de.adorsys.ledgers.middleware.rest.security.JWTAuthenticationFilter;
 import de.adorsys.ledgers.middleware.rest.security.MiddlewareAuthentication;
@@ -22,6 +21,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Optional;
 
 @Configuration
@@ -29,12 +29,10 @@ import java.util.Optional;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final TokenAuthenticationService tokenAuthenticationService;
-    private final CorsConfigProperties configProperties;
 
     @Autowired
-    public WebSecurityConfig(TokenAuthenticationService tokenAuthenticationService, CorsConfigProperties configProperties) {
+    public WebSecurityConfig(TokenAuthenticationService tokenAuthenticationService) {
         this.tokenAuthenticationService = tokenAuthenticationService;
-        this.configProperties = configProperties;
     }
 
     @Override
@@ -95,10 +93,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(configProperties.getAllowedOrigins());
-        configuration.setAllowedHeaders(configProperties.getAllowedHeaders());
-        configuration.setAllowedMethods(configProperties.getAllowedMethods());
+        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
