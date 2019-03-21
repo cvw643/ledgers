@@ -78,8 +78,8 @@ management:
     web:
       cors:
         allow-credentials: true
-        allowed-origins: "http:localhost:4200"
-        allowed-headers: Access-Control-Allow-Headers, Content-Type, Origin, X-Requested-With, Cookie
+        allowed-origins: "*"
+        allowed-headers: Access-Control-Allow-Headers, Content-Type, Origin, X-Requested-With, Cookie, Authorization
         allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
         max-age: 3600
 
