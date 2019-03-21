@@ -15,9 +15,6 @@ public class CorsConfigProperties {
     private List<String> allowedHeaders;
     private long maxAge;
 
-    public CorsConfigProperties() {
-    }
-
     public Boolean getAllowCredentials() {
         return allowCredentials;
     }
