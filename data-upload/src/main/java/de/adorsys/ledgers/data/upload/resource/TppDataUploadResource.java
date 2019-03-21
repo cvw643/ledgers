@@ -45,7 +45,6 @@ public class TppDataUploadResource {
         this.generationService = generationService;
     }
 
-    @CrossOrigin(origins = {"http://localhost:4200"})
     @ApiOperation(value = "Upload YAML file with basic test data", authorizations = @Authorization(value = "apiKey"))
     @PutMapping("/upload")
     public ResponseEntity<String> uploadYamlData(HttpServletRequest request, @RequestBody MultipartFile file) {
