@@ -116,7 +116,7 @@ db:
   database: ledgers
   port: 5432
   url: jdbc:postgresql://${db.host}:${db.port}/${db.database}
-ledgers.mockbank.data.load: false
+ledgers.mockbank.data.load: true
 ---
 # hibernate-ddl profile is used to fully initialize the database
 # from ddl generation and rest based upload of test data.
