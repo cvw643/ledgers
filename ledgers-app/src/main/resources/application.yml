@@ -69,6 +69,7 @@ sca:
     phone:
       subject: "Your TAN from MockBank"
   multilevel.enabled: true
+  tan.mock.enabled: true
 
 user-service:
   jwt.hs256.secret: 6VFX8YFQG5DLFKZIMNLGH9P406XR1SY4
@@ -115,7 +116,7 @@ db:
   database: ledgers
   port: 5432
   url: jdbc:postgresql://${db.host}:${db.port}/${db.database}
-ledgers.mockbank.data.load: true
+ledgers.mockbank.data.load: false
 ---
 # hibernate-ddl profile is used to fully initialize the database
 # from ddl generation and rest based upload of test data.

@@ -16,6 +16,7 @@
 
 package de.adorsys.ledgers.app;
 
+import de.adorsys.ledgers.app.mock.MockAuthCodeGenerator;
 import de.adorsys.ledgers.data.upload.service.EnableBatchDataUploadForTpp;
 import de.adorsys.ledgers.deposit.api.service.EnableDepositAccountService;
 import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;
@@ -25,7 +26,9 @@ import de.adorsys.ledgers.mockbank.simple.service.EnableMockBankSimple;
 import de.adorsys.ledgers.mockbank.simple.service.MockBankSimpleInitService;
 import de.adorsys.ledgers.postings.impl.EnablePostingService;
 import de.adorsys.ledgers.sca.mock.MockSmtpServer;
+import de.adorsys.ledgers.sca.service.AuthCodeGenerator;
 import de.adorsys.ledgers.sca.service.EnableSCAService;
+import de.adorsys.ledgers.sca.service.impl.AuthCodeGeneratorImpl;
 import de.adorsys.ledgers.um.impl.EnableUserManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +59,9 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
     @Value("${ledgers.mockbank.data.load:false}")
     private boolean loadMockData;
 
+    @Value("${sca.tan.mock.enabled}")
+    private boolean enableMockTan;
+
     @Autowired
     public LedgersApplication(ApplicationContext context) {
         this.context = context;
@@ -70,6 +76,13 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
         if (loadMockData) {
             context.getBean(MockBankSimpleInitService.class).runInit();
         }
+    }
+
+    @Bean
+    public AuthCodeGenerator authCodeGenerator() {
+        return enableMockTan
+                       ? new MockAuthCodeGenerator()
+                       : new AuthCodeGeneratorImpl();
     }
 
     // enabled when mock-smtp maven profile is active
