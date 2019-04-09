@@ -75,6 +75,9 @@ public class SCAOperationServiceImpl implements SCAOperationService {
     @Value("${sca.multilevel.enabled:false}")
     private boolean multilevelScaEnable;
 
+    @Value("${sca.final.weight:100}")
+    private int finalWeight;
+
     public SCAOperationServiceImpl(List<SCASender> senders, SCAOperationRepository repository,
                                    AuthCodeGenerator authCodeGenerator, SCAOperationMapper scaOperationMapper) {
         this.repository = repository;
@@ -206,7 +209,7 @@ public class SCAOperationServiceImpl implements SCAOperationService {
         return found.stream()
                        .filter(op -> op.getScaStatus() == ScaStatus.FINALISED)
                        .collect(Collectors.summarizingInt(SCAOperationEntity::getScaWeight))
-                       .getSum() >= 100;
+                       .getSum() >= finalWeight;
     }
 
     private boolean isAnyScaCompleted(List<SCAOperationEntity> found) {
