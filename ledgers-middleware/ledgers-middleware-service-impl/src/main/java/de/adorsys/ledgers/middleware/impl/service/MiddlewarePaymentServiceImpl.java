@@ -247,7 +247,6 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 	            tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.PATC);
             }
 			BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
-            // TODO return partially acepted
 			return toScaPaymentResponse(scaUtils.user(), paymentId, tx, paymentKeyData, scaUtils.loadAuthCode(authorisationId), bearerToken);
 		} catch (PaymentNotFoundException e) {
 			logger.error(e.getMessage());

@@ -211,8 +211,7 @@ public class SCAOperationServiceImpl implements SCAOperationService {
 
     private boolean isAnyScaCompleted(List<SCAOperationEntity> found) {
         return found.stream()
-                       .anyMatch(s -> s.getStatus()
-                                              .equals(AuthCodeStatus.VALIDATED));
+                       .anyMatch(op -> op.getScaStatus() == ScaStatus.FINALISED);
     }
 
     private void success(SCAOperationEntity operation) {
