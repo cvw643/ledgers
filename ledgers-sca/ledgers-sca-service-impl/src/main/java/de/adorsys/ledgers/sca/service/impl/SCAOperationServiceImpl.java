@@ -22,10 +22,7 @@ import de.adorsys.ledgers.sca.db.domain.OpType;
 import de.adorsys.ledgers.sca.db.domain.SCAOperationEntity;
 import de.adorsys.ledgers.sca.db.domain.ScaStatus;
 import de.adorsys.ledgers.sca.db.repository.SCAOperationRepository;
-import de.adorsys.ledgers.sca.domain.AuthCodeDataBO;
-import de.adorsys.ledgers.sca.domain.OpTypeBO;
-import de.adorsys.ledgers.sca.domain.SCAOperationBO;
-import de.adorsys.ledgers.sca.domain.ScaStatusBO;
+import de.adorsys.ledgers.sca.domain.*;
 import de.adorsys.ledgers.sca.exception.*;
 import de.adorsys.ledgers.sca.service.AuthCodeGenerator;
 import de.adorsys.ledgers.sca.service.SCAOperationService;
@@ -47,11 +44,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static de.adorsys.ledgers.sca.domain.OpTypeBO.*;
 
 @Service
 public class SCAOperationServiceImpl implements SCAOperationService {
@@ -76,6 +72,9 @@ public class SCAOperationServiceImpl implements SCAOperationService {
     @Value("${sca.authCode.failed.max:5}")
     private int authCodeFailedMax;
 
+    @Value("${sca.multilevel.enabled:false}")
+    private boolean multilevelScaEnable;
+
     public SCAOperationServiceImpl(List<SCASender> senders, SCAOperationRepository repository,
                                    AuthCodeGenerator authCodeGenerator, SCAOperationMapper scaOperationMapper) {
         this.repository = repository;
@@ -83,9 +82,7 @@ public class SCAOperationServiceImpl implements SCAOperationService {
         this.authCodeGenerator = authCodeGenerator;
         hashGenerator = new HashGeneratorImpl();
         if (senders != null) {
-            senders.forEach(s -> {
-                this.senders.put(s.getType(), s);
-            });
+            senders.forEach(s -> this.senders.put(s.getType(), s));
         }
     }
 
@@ -150,12 +147,12 @@ public class SCAOperationServiceImpl implements SCAOperationService {
 
         String generatedHash = generateHash(operation.getId(), opId, opData, authCode);
 
-        boolean isAuthCodeValid = generatedHash != null && generatedHash.equals(authCodeHash);
+        boolean isAuthCodeValid = StringUtils.equals(authCodeHash, generatedHash);
 
         if (isAuthCodeValid) {
             success(operation);
         } else {
-            failled(operation);
+            failed(operation);
         }
 
         return isAuthCodeValid;
@@ -195,19 +192,27 @@ public class SCAOperationServiceImpl implements SCAOperationService {
     @Override
     public boolean authenticationCompleted(String opId, OpTypeBO opType) {
         List<SCAOperationEntity> found = repository.findByOpIdAndOpType(opId, OpType.valueOf(opType.name()));
-        // We return false here.
-        if (found.isEmpty()) {
-            return false;
-        }
+        return multilevelScaEnable
+                       ? isMultiLevelScaCompleted(found, opType)
+                       : isAnyScaCompleted(found);
+    }
+
+    private boolean isMultiLevelScaCompleted(List<SCAOperationEntity> found, OpTypeBO opType) {
+        return EnumSet.of(PAYMENT, CANCEL_PAYMENT, CONSENT).contains(opType)
+                       && isCompletedByAllUsers(found);
+    }
+
+    private boolean isCompletedByAllUsers(List<SCAOperationEntity> found) {
+        return found.stream()
+                       .filter(op -> op.getScaStatus() == ScaStatus.FINALISED)
+                       .collect(Collectors.summarizingInt(SCAOperationEntity::getScaWeight))
+                       .getSum() >= 100;
+    }
+
+    private boolean isAnyScaCompleted(List<SCAOperationEntity> found) {
         return found.stream()
                        .anyMatch(s -> s.getStatus()
                                               .equals(AuthCodeStatus.VALIDATED));
-		/*for (SCAOperationEntity o : found) {
-			if(!AuthCodeStatus.VALIDATED.equals(o.getStatus())) {
-				return false;
-			}
-		}
-		return true;*/ //TODO Should be hanged for implementation of MultiLevel SCA
     }
 
     private void success(SCAOperationEntity operation) {
@@ -215,7 +220,7 @@ public class SCAOperationServiceImpl implements SCAOperationService {
         repository.save(operation);
     }
 
-    private void failled(SCAOperationEntity operation) {
+    private void failed(SCAOperationEntity operation) {
         operation.setFailledCount(operation.getFailledCount() + 1);
         operation.setStatus(AuthCodeStatus.FAILED);
         if (operation.getFailledCount() >= authCodeFailedMax) {

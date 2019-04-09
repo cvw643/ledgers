@@ -186,7 +186,7 @@ public class MiddlewarePaymentServiceImplTest {
         when(paymentService.initiatePayment(any(), any())).thenReturn(paymentBO);
         when(paymentService.executePayment(any(), any())).thenReturn(TransactionStatusBO.ACSP);
         when(accessToken.getLogin()).thenReturn("login");
-        when(paymentService.updatePaymentStatusToAuthorised(PAYMENT_ID)).thenReturn(TransactionStatusBO.ACSP);
+        when(paymentService.updatePaymentStatus(PAYMENT_ID, TransactionStatusBO.ACTC)).thenReturn(TransactionStatusBO.ACSP);
         when(accessTokenMapper.toAccessTokenBO(any())).thenReturn(new AccessTokenBO());
         when(bearerTokenMapper.toBearerTokenTO(any())).thenReturn(new BearerTokenTO());
         when(scaUtils.userBO()).thenReturn(userBO);

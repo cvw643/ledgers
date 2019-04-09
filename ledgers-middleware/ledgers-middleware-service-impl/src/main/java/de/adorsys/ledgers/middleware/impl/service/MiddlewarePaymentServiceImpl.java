@@ -41,10 +41,7 @@ import de.adorsys.ledgers.middleware.impl.converter.BearerTokenMapper;
 import de.adorsys.ledgers.middleware.impl.converter.PaymentConverter;
 import de.adorsys.ledgers.middleware.impl.policies.PaymentCancelPolicy;
 import de.adorsys.ledgers.middleware.impl.policies.PaymentCoreDataPolicy;
-import de.adorsys.ledgers.sca.domain.AuthCodeDataBO;
-import de.adorsys.ledgers.sca.domain.OpTypeBO;
-import de.adorsys.ledgers.sca.domain.SCAOperationBO;
-import de.adorsys.ledgers.sca.domain.ScaStatusBO;
+import de.adorsys.ledgers.sca.domain.*;
 import de.adorsys.ledgers.sca.exception.*;
 import de.adorsys.ledgers.sca.service.SCAOperationService;
 import de.adorsys.ledgers.um.api.domain.AccessTokenBO;
@@ -57,6 +54,7 @@ import de.adorsys.ledgers.um.api.service.UserService;
 import de.adorsys.ledgers.util.Ids;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,12 +81,14 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 	private final PaymentCoreDataPolicy coreDataPolicy;
 	private int defaultLoginTokenExpireInSeconds = 600; // 600 seconds.
 
+	@Value("${sca.multilevel.enabled:false}")
+	private boolean multilevelScaEnable;
+
 	public MiddlewarePaymentServiceImpl(DepositAccountPaymentService paymentService,
 			SCAOperationService scaOperationService, DepositAccountService accountService,
 			PaymentConverter paymentConverter, AccessTokenTO accessTokenTO, BearerTokenMapper bearerTokenMapper,
 			AccessTokenMapper accessTokenMapper, UserService userService, SCAUtils scaUtils,
 			PaymentCancelPolicy cancelPolicy, PaymentCoreDataPolicy coreDataPolicy) {
-		super();
 		this.paymentService = paymentService;
 		this.scaOperationService = scaOperationService;
 		this.accountService = accountService;
@@ -123,7 +123,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 
 		PaymentCoreDataTO paymentKeyData = coreDataPolicy.getCancelPaymentCoreData(paymentBO);
 		SCAPaymentResponseTO response = prepareSCA(userBO, paymentBO, paymentKeyData, OpTypeBO.CANCEL_PAYMENT);
-		
+
 		// If exempted, execute.
 		if(ScaStatusTO.EXEMPTED.equals(response.getScaStatus())) {
 			try {
@@ -137,7 +137,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 
 		return response;
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> SCAPaymentResponseTO initiatePayment(T payment, PaymentTypeTO paymentType)
@@ -145,21 +145,16 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 		PaymentBO paymentBO = paymentConverter.toPaymentBO(payment, paymentType.getPaymentClass());
 		UserBO userBO = scaUtils.userBO();
 		checkDepositAccount(paymentBO);
-		
-		TransactionStatusBO status = scaUtils.hasSCA(userBO) 
+
+		TransactionStatusBO status = scaUtils.hasSCA(userBO)
 				? TransactionStatusBO.ACCP
 				: TransactionStatusBO.ACTC;
-		/*String debtorIban = paymentBO.getDebtorAccount().getIban();
-		Integer signaturesRequired = userBO.getAccountAccesses().stream()
-				                  .filter(a -> a.getIban().equals(debtorIban))
-				                  .findFirst()
-				                  .map(AccountAccessBO::getScaRequiredToAuthorise)
-				                  .orElse(0);*/
-//TODO UNFINISHED! TASK https://git.adorsys.de/adorsys/xs2a/ledgers/issues/171
 
 		paymentBO = persist(paymentBO, status);
 		status = paymentBO.getTransactionStatus();
 		SCAPaymentResponseTO response = new SCAPaymentResponseTO();
+		response.setMultilevelScaRequired(multilevelScaEnable);
+
 		if (TransactionStatusBO.RJCT.equals(status)) {
 			response.setScaStatus(ScaStatusTO.FAILED);
 			response.setTransactionStatus(TransactionStatusTO.valueOf(status.name()));
@@ -171,7 +166,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 			if(ScaStatusTO.EXEMPTED.equals(response.getScaStatus())) {
 				try {
 					// TODO dmi do we need. As we are scheduling execution right away.
-					status = paymentService.updatePaymentStatusToAuthorised(paymentBO.getPaymentId());
+					status = paymentService.updatePaymentStatus(paymentBO.getPaymentId(), TransactionStatusBO.ACTC);
 					response.setTransactionStatus(TransactionStatusTO.valueOf(status.name()));
 					status = paymentService.executePayment(paymentBO.getPaymentId(), userBO.getLogin());
 					response.setTransactionStatus(TransactionStatusTO.valueOf(status.name()));
@@ -231,24 +226,28 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 
 	/*
 	 * Authorizes a payment. Schedule the payment for execution if no further authorization is required.
-	 * 
+	 *
 	 */
 	@Override
 	public SCAPaymentResponseTO authorizePayment(String paymentId, String authorisationId, String authCode)
 			throws SCAOperationNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
-			SCAOperationExpiredMiddlewareException, SCAOperationUsedOrStolenMiddlewareException, 
+			SCAOperationExpiredMiddlewareException, SCAOperationUsedOrStolenMiddlewareException,
 			PaymentNotFoundMiddlewareException {
-		
+
 		PaymentBO payment = loadPayment(paymentId);
 		PaymentCoreDataTO paymentKeyData = coreDataPolicy.getPaymentCoreData(payment);
 		TransactionStatusBO tx = payment.getTransactionStatus();
 		try {
 			validateAuthCode(payment, authorisationId, authCode, paymentKeyData.template());
-			if(scaOperationService.authenticationCompleted(paymentId, OpTypeBO.PAYMENT)) {
-				tx = paymentService.updatePaymentStatusToAuthorised(paymentId);
-				tx = paymentService.executePayment(paymentId, accessTokenTO.getLogin());
-			}
+            boolean authCompleted = scaOperationService.authenticationCompleted(paymentId, OpTypeBO.PAYMENT);
+            if(authCompleted) {
+				tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.ACTC);
+                tx = paymentService.executePayment(paymentId, accessTokenTO.getLogin());
+			} else if(multilevelScaEnable) {
+	            tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.PATC);
+            }
 			BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
+            // TODO return partially acepted
 			return toScaPaymentResponse(scaUtils.user(), paymentId, tx, paymentKeyData, scaUtils.loadAuthCode(authorisationId), bearerToken);
 		} catch (PaymentNotFoundException e) {
 			logger.error(e.getMessage());
@@ -295,9 +294,9 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 
 	@Override
 	public SCAPaymentResponseTO selectSCAMethodForPayment(String paymentId, String authorisationId, String scaMethodId)
-			throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException, 
-			UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException, 
-			SCAOperationNotFoundMiddlewareException 
+			throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException,
+			UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
+			SCAOperationNotFoundMiddlewareException
 	{
 		UserBO userBO = scaUtils.userBO();
 		UserTO userTO = scaUtils.user(userBO);
@@ -343,9 +342,9 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 	@Override
 	public SCAPaymentResponseTO selectSCAMethodForCancelPayment(String paymentId, String cancellationId,
 			String scaMethodId)
-					throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException, 
-					UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException, 
-					SCAOperationNotFoundMiddlewareException 
+					throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException,
+					UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
+					SCAOperationNotFoundMiddlewareException
 			{
 		UserBO userBO = scaUtils.userBO();
 		UserTO userTO = scaUtils.user(userBO);
@@ -354,9 +353,9 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 		String template = paymentKeyData.template();
 		String opData = template;
 		String userMessage = template;
-		AuthCodeDataBO a = new AuthCodeDataBO(userBO.getLogin(), scaMethodId, 
-				paymentId, opData, userMessage, 
-				defaultLoginTokenExpireInSeconds, 
+		AuthCodeDataBO a = new AuthCodeDataBO(userBO.getLogin(), scaMethodId,
+				paymentId, opData, userMessage,
+				defaultLoginTokenExpireInSeconds,
 				OpTypeBO.CANCEL_PAYMENT, cancellationId);
 
 		try {
@@ -384,12 +383,14 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 		PaymentCoreDataTO paymentKeyData = coreDataPolicy.getCancelPaymentCoreData(payment);
 		try {
 			validateAuthCode(payment, cancellationId, authCode, paymentKeyData.template());
-			TransactionStatusBO tx = payment.getTransactionStatus(); 
+			TransactionStatusBO tx = payment.getTransactionStatus();
 			if(scaOperationService.authenticationCompleted(paymentId, OpTypeBO.CANCEL_PAYMENT)) {
 				tx = paymentService.cancelPayment(paymentId);
+			} else if(multilevelScaEnable) {
+				tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.PATC);
 			}
 			BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
-			return toScaPaymentResponse(scaUtils.user(), paymentId, tx, 
+			return toScaPaymentResponse(scaUtils.user(), paymentId, tx,
 					paymentKeyData, scaUtils.loadAuthCode(cancellationId), bearerToken);
 		} catch (PaymentNotFoundException e) {
 			logger.error(e.getMessage());
@@ -428,7 +429,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 
 	/*
 	 * The SCA requirement shall be added as property of a deposit account permissionning.
-	 * 
+	 *
 	 * For now we will assume there is no sca requirement, when the user having access
 	 * to the account does not habe any sca data configured.
 	 */
@@ -458,7 +459,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 			setPaymentProductAndType(payment, response);
 			return response;
 		} else {
-			AuthCodeDataBO authCodeData = new AuthCodeDataBO(user.getLogin(), null, 
+			AuthCodeDataBO authCodeData = new AuthCodeDataBO(user.getLogin(), null,
 					payment.getPaymentId(), opData, userMessage,
 					defaultLoginTokenExpireInSeconds, opType, authorisationId);
 			// start SCA
@@ -472,7 +473,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 		}
 	}
 
-	private SCAPaymentResponseTO toScaPaymentResponse(UserTO user, String paymentId, TransactionStatusBO tx , 
+	private SCAPaymentResponseTO toScaPaymentResponse(UserTO user, String paymentId, TransactionStatusBO tx ,
 			PaymentCoreDataTO paymentKeyData,
 			SCAOperationBO a, BearerTokenTO paymentAccountAccessToken) {
 		SCAPaymentResponseTO response = new SCAPaymentResponseTO();
@@ -490,5 +491,5 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 		response.setBearerToken(paymentAccountAccessToken);
 		return response;
 	}
-	
+
 }
