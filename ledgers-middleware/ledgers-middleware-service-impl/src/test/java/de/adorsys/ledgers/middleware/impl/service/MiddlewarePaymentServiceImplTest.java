@@ -115,6 +115,8 @@ public class MiddlewarePaymentServiceImplTest {
     private PaymentCancelPolicy cancelPolicy;
     @Mock
     private AccessTokenMapper accessTokenMapper;
+    @Mock
+    private AccessService accessService;
 
     @Test
     public void getPaymentStatusById() throws PaymentNotFoundMiddlewareException, PaymentNotFoundException {

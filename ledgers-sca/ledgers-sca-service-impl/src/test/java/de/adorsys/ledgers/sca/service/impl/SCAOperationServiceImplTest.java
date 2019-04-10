@@ -119,6 +119,7 @@ public class SCAOperationServiceImplTest {
         codeDataBO.setScaUserDataId(SCA_USER_DATA_ID);
         codeDataBO.setUserLogin(USER_LOGIN);
         codeDataBO.setOpType(OpTypeBO.PAYMENT);
+        codeDataBO.setScaWeight(100);
 
         HashMap<ScaMethodTypeBO, SCASender> senders = new HashMap<>();
         emailSender = mock(SCASender.class);

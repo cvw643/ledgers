@@ -63,6 +63,9 @@ public class SCAOperationServiceImpl implements SCAOperationService {
     private HashGenerator hashGenerator;
     private Map<ScaMethodTypeBO, SCASender> senders = new HashMap<>();
 
+
+    //Use property config instead
+
     @Value("${sca.authCode.validity.seconds:180}")
     private int authCodeValiditySeconds;
 
@@ -281,6 +284,7 @@ public class SCAOperationServiceImpl implements SCAOperationService {
                                       : authCodeData.getValiditySeconds();
         scaOp.setValiditySeconds(validitySeconds);
         scaOp.setScaStatus(ScaStatus.valueOf(scaStatus.name()));
+        scaOp.setScaWeight(authCodeData.getScaWeight());
         return repository.save(scaOp);
     }
 

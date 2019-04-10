@@ -94,7 +94,7 @@ public class UserMgmtResource implements UserMgmtRestAPI {
                                                                   String consentId, String authorisationId, OpTypeTO opType) {
         try {
             return ResponseEntity.ok(onlineBankingService.authoriseForConsent(login, pin, consentId, authorisationId, opType));
-        } catch (UserNotFoundMiddlewareException e) {
+        } catch (UserNotFoundMiddlewareException | AisConsentNotFoundMiddlewareException | PaymentNotFoundMiddlewareException e) {
             logger.error(e.getMessage(), e);
             throw new NotFoundRestException(e.getMessage()).withDevMessage(e.getMessage());
         } catch (InsufficientPermissionMiddlewareException e) {

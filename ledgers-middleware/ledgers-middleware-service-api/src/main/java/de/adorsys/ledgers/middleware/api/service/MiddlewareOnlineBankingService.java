@@ -5,15 +5,7 @@ import de.adorsys.ledgers.middleware.api.domain.sca.SCALoginResponseTO;
 import de.adorsys.ledgers.middleware.api.domain.um.BearerTokenTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
-import de.adorsys.ledgers.middleware.api.exception.InsufficientPermissionMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAMethodNotSupportedMiddleException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationExpiredMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationUsedOrStolenMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.SCAOperationValidationMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.UserAlreadyExistsMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.UserScaDataNotFoundMiddlewareException;
+import de.adorsys.ledgers.middleware.api.exception.*;
 
 /**
  * Interface used for the initialization of user interaction. Implementation of
@@ -63,9 +55,10 @@ public interface MiddlewareOnlineBankingService {
 	 * @return
 	 * @throws UserNotFoundMiddlewareException :sis thrown if user can`t be found
 	 * @throws InsufficientPermissionMiddlewareException  : permission not sufficient
+	 * @throws AisConsentNotFoundMiddlewareException  : consent not found
 	 */
 	SCALoginResponseTO authoriseForConsent(String login, String pin, String consentId, String authorisationId,
-			OpTypeTO opType) throws UserNotFoundMiddlewareException, InsufficientPermissionMiddlewareException;
+			OpTypeTO opType) throws UserNotFoundMiddlewareException, InsufficientPermissionMiddlewareException, AisConsentNotFoundMiddlewareException, PaymentNotFoundMiddlewareException;
 
 	/**
 	 * Caller can be sure that returned user object contains a mirror of permissions

@@ -1,24 +1,27 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountBO;
+import de.adorsys.ledgers.deposit.api.domain.PaymentBO;
 import de.adorsys.ledgers.deposit.api.exception.DepositAccountUncheckedException;
+import de.adorsys.ledgers.deposit.api.exception.PaymentNotFoundException;
+import de.adorsys.ledgers.deposit.api.service.DepositAccountPaymentService;
 import de.adorsys.ledgers.middleware.api.domain.um.AccessTokenTO;
 import de.adorsys.ledgers.middleware.api.domain.um.AccessTypeTO;
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
-import de.adorsys.ledgers.um.api.domain.AccessTypeBO;
-import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
-import de.adorsys.ledgers.um.api.domain.UserBO;
+import de.adorsys.ledgers.sca.domain.OpTypeBO;
+import de.adorsys.ledgers.um.api.domain.*;
+import de.adorsys.ledgers.um.api.exception.ConsentNotFoundException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class AccessService {
@@ -26,10 +29,12 @@ public class AccessService {
 
     private final UserService userService;
     private final AccessTokenTO accessToken;
+    private final DepositAccountPaymentService paymentService;
 
-    public AccessService(UserService userService, AccessTokenTO accessToken) {
+    public AccessService(UserService userService, AccessTokenTO accessToken, DepositAccountPaymentService paymentService) {
         this.userService = userService;
         this.accessToken = accessToken;
+        this.paymentService = paymentService;
     }
 
     public void addAccess(List<AccountAccessTO> accountAccess, DepositAccountBO depositAccountBO,
@@ -41,7 +46,7 @@ public class AccessService {
                 user = userService.findById(accountAccessTO.getUser().getId());
             }
             AccountAccessBO accountAccessBO = new AccountAccessBO(depositAccountBO.getIban(),
-                    AccessTypeBO.valueOf(accountAccessTO.getAccessType().name()));
+                                                                  AccessTypeBO.valueOf(accountAccessTO.getAccessType().name()));
             addAccess(user, accountAccessBO, persistBuffer);
         }
         for (UserBO u : persistBuffer.values()) {
@@ -102,4 +107,34 @@ public class AccessService {
         return date.atTime(23, 59, 59, 99);
     }
 
+    public int resolveScaWeight(String id, OpTypeBO opTypeBO, List<AccountAccessBO> usersAccess) throws ConsentNotFoundException, PaymentNotFoundException {
+        if (EnumSet.of(OpTypeBO.PAYMENT, OpTypeBO.CANCEL_PAYMENT).contains(opTypeBO)) {
+            PaymentBO paymentBO = paymentService.getPaymentById(id);
+            return resolveScaWeightByDebtorAccount(usersAccess, paymentBO.getDebtorAccount().getIban());
+        } else if (OpTypeBO.CONSENT == opTypeBO) {
+            AisConsentBO consentBO = userService.loadConsent(id);
+            return resolveMinimalScaWeightForConsent(consentBO.getAccess(), usersAccess);
+        }
+        return 0;
+    }
+
+    public int resolveScaWeightByDebtorAccount(List<AccountAccessBO> accountAccesses, String debtorAccount) {
+        return accountAccesses.stream()
+                       .filter(ac -> StringUtils.equalsIgnoreCase(ac.getIban(), debtorAccount))
+                       .map(AccountAccessBO::getScaWeight)
+                       .findFirst()
+                       .orElse(0);
+    }
+
+    public int resolveMinimalScaWeightForConsent(AisAccountAccessInfoBO access, List<AccountAccessBO> accountAccesses) {
+        Set<String> combinedAccounts = Stream.of(access.getAccounts(), access.getBalances(), access.getTransactions())
+                                               .flatMap(Collection::stream)
+                                               .collect(Collectors.toSet());
+
+        return accountAccesses.stream()
+                       .filter(ac -> combinedAccounts.contains(ac.getIban()))
+                       .min(Comparator.comparing(AccountAccessBO::getScaWeight))
+                       .map(AccountAccessBO::getScaWeight)
+                       .orElse(0);
+    }
 }
