@@ -16,13 +16,12 @@
 
 package de.adorsys.ledgers.app;
 
+import de.adorsys.ledgers.app.ledgersInitiation.BankInitService;
 import de.adorsys.ledgers.data.upload.service.EnableBatchDataUploadForTpp;
 import de.adorsys.ledgers.deposit.api.service.EnableDepositAccountService;
 import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;
 import de.adorsys.ledgers.middleware.impl.EnableLedgersMiddlewareService;
 import de.adorsys.ledgers.middleware.rest.EnableLedgersMiddlewareRest;
-import de.adorsys.ledgers.mockbank.simple.service.EnableMockBankSimple;
-import de.adorsys.ledgers.mockbank.simple.service.MockBankSimpleInitService;
 import de.adorsys.ledgers.postings.impl.EnablePostingService;
 import de.adorsys.ledgers.sca.mock.MockSmtpServer;
 import de.adorsys.ledgers.sca.service.EnableSCAService;
@@ -39,8 +38,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import java.util.Arrays;
-
 @EnableScheduling
 @SpringBootApplication
 @EnableUserManagementService
@@ -49,17 +46,18 @@ import java.util.Arrays;
 @EnableDepositAccountService
 @EnableLedgersMiddlewareService
 @EnableLedgersMiddlewareRest
-@EnableMockBankSimple
 @EnableBatchDataUploadForTpp
 @EnableFeignClients(basePackageClasses = AccountRestClient.class)
 public class LedgersApplication implements ApplicationListener<ApplicationReadyEvent> {
     private final ApplicationContext context;
     private final Environment env;
+    private final BankInitService bankInitService;
 
     @Autowired
-    public LedgersApplication(ApplicationContext context, Environment env) {
+    public LedgersApplication(ApplicationContext context, Environment env, BankInitService bankInitService) {
         this.context = context;
         this.env = env;
+        this.bankInitService = bankInitService;
     }
 
     public static void main(String[] args) {
@@ -68,9 +66,10 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        if (Arrays.asList(env.getActiveProfiles()).contains("develop")) {
+        bankInitService.init();
+        /*if (Arrays.asList(env.getActiveProfiles()).contains("develop")) {
             context.getBean(MockBankSimpleInitService.class).runInit();
-        }
+        }*/
     }
 
     // enabled when mock-smtp maven profile is active

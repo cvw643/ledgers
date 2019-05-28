@@ -1,14 +1,5 @@
 package de.adorsys.ledgers.mockbank.simple.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
 import de.adorsys.ledgers.middleware.api.domain.um.BearerTokenTO;
@@ -18,6 +9,15 @@ import de.adorsys.ledgers.middleware.rest.exception.ConflictRestException;
 import de.adorsys.ledgers.mockbank.simple.data.MockbankInitData;
 import de.adorsys.ledgers.mockbank.simple.data.TransactionData;
 import feign.FeignException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MockBankSimpleInitService {
@@ -42,7 +42,7 @@ public class MockBankSimpleInitService {
 	public void runInit() {
 		try {
 			// If !hasAdmin
-			BearerTokenTO bearerToken = null;
+			BearerTokenTO bearerToken;
 			try {
 				bearerToken = userAccountService.createAdminAccount();
 			} catch (ConflictRestException c) {
@@ -111,7 +111,7 @@ public class MockBankSimpleInitService {
 	private void updateIfRequired()
 			throws IOException {
 		// No users, not
-		if (sampleData.getUsers() == null || sampleData.getUsers().isEmpty()) {
+		if (CollectionUtils.isEmpty(sampleData.getUsers())) {
 			return;
 		}
 

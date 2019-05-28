@@ -18,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +35,7 @@ public class UserAccountService {
 
 	@SuppressWarnings({"PMD.CyclomaticComplexity"})
 	public BearerTokenTO authorize(String login, String pin, UserRoleTO role)
-			throws UnsupportedEncodingException, IOException, ProtocolException {
+			throws IOException {
 
 		ResponseEntity<SCALoginResponseTO> res = null;
 		HttpStatus statusCode = null;
@@ -147,7 +145,7 @@ public class UserAccountService {
 	}
 	
 	public BearerTokenTO authOrCreateCustomer(UserTO user)
-			throws UnsupportedEncodingException, ProtocolException, IOException {
+			throws IOException {
 		contextService.updateCredentials(user.getLogin(), new UserContext(user));
 		try {
 			return authorize(user.getLogin(), user.getPin(), UserRoleTO.CUSTOMER);
@@ -156,7 +154,7 @@ public class UserAccountService {
 		}
 	}
 
-	private BearerTokenTO registerCustomer(UserTO user) throws ProtocolException, IOException {
+	private BearerTokenTO registerCustomer(UserTO user) throws IOException {
 		try {
 			ledgersUserMgmt.register(user.getLogin(), user.getEmail(), user.getPin(), UserRoleTO.CUSTOMER);
 			try {

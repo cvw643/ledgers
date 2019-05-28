@@ -133,7 +133,7 @@ public class SCAOperationServiceImpl implements SCAOperationService {
                                               ? authCodeEmailBody
                                               : data.getUserMessage();
         String message = String.format(usderMessageTemplate, tan);
-
+        logger.info("TAN IS: {}", tan);
         senders.get(scaUserData.getScaMethod()).send(scaUserData.getMethodValue(), message);
 
         return scaOperationMapper.toBO(scaOperation);

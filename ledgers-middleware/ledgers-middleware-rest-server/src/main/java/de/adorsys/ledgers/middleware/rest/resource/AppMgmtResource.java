@@ -23,12 +23,10 @@ import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import de.adorsys.ledgers.middleware.api.exception.InsufficientPermissionMiddlewareException;
 import de.adorsys.ledgers.middleware.api.exception.UserAlreadyExistsMiddlewareException;
 import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.service.AppManagementService;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareOnlineBankingService;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareUserManagementService;
 import de.adorsys.ledgers.middleware.rest.annotation.MiddlewareUserResource;
 import de.adorsys.ledgers.middleware.rest.exception.ConflictRestException;
-import de.adorsys.ledgers.middleware.rest.exception.RestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -47,9 +44,9 @@ import java.util.List;
 public class AppMgmtResource implements AppMgmtRestAPI {
 
 	private static final Logger logger = LoggerFactory.getLogger(AppMgmtResource.class);
-	
-	@Autowired
-    private AppManagementService appManagementService;
+
+	/*@Autowired
+    private AppManagementService appManagementService;*/
 	
 	@Autowired
 	private MiddlewareUserManagementService userManagementService; 
@@ -64,12 +61,12 @@ public class AppMgmtResource implements AppMgmtRestAPI {
     @Override
     @PreAuthorize("hasRole('SYSTEM')")
     public ResponseEntity<Void> initApp() {
-    	try {
-			appManagementService.initApp();
+    	/*try {
+			appManagementService.initApp();*/
 			return ResponseEntity.ok().build();
-		} catch (IOException e) {
+		/*} catch (IOException e) {
 			throw new RestException("Error initializing deposit account module.", e);
-		}
+		}*/
     }
     
     @Override

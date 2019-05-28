@@ -17,102 +17,104 @@ import java.util.List;
 
 @Service
 public class AccountTransactionService {
-	private static final Logger logger = LoggerFactory.getLogger(MockBankSimpleInitService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MockBankSimpleInitService.class);
 
 
-	@Autowired
-	private AccountRestClient ledgersAccount;
-	@Autowired
-	private UserContextService contextService;
-	@Autowired
-	private DepositAccountService depositAccountService;
+    private final AccountRestClient ledgersAccount;
+    private final UserContextService contextService;
+    private final DepositAccountService depositAccountService;
 
-	/**
-	 * Validate if all transactions listed in the upload file are in the database.
-	 *
-	 * @param t : the data holder
-	 * @param strict : if there is more transaction in that time frame, return true.
-	 *
-	 * @return : true if transaction match specification given.
-	 * @throws IOException : error
-	 */
-	public boolean validateTransactions(TransactionData t, boolean strict) throws IOException {
-		AccountDetailsTO accountDetailsTO = depositAccountService.account(t.getIban())
-				.orElseThrow(() -> depositAccountService.numberFormater(t.getIban()));
-		List<TransactionTO> loadedTransactions = loadTransactions(accountDetailsTO, t.getDateFrom(), LocalDate.now());
+    @Autowired
+    public AccountTransactionService(AccountRestClient ledgersAccount, UserContextService contextService, DepositAccountService depositAccountService) {
+        this.ledgersAccount = ledgersAccount;
+        this.contextService = contextService;
+        this.depositAccountService = depositAccountService;
+    }
 
-		// Now compare the transactions
-		List<TransactionTO> expectedTransactions = t.getTransactions();
-		if(loadedTransactions.size() < expectedTransactions.size() ||
-				strict && loadedTransactions.size() != expectedTransactions.size()) {
-			logger.error("For account {} loaded transactions of size {} differs from configured transactions of size {}.", t.getIban(), loadedTransactions.size(), expectedTransactions.size());
-			return false;
-		}
+    /**
+     * Validate if all transactions listed in the upload file are in the database.
+     *
+     * @param t      : the data holder
+     * @param strict : if there is more transaction in that time frame, return true.
+     * @return : true if transaction match specification given.
+     * @throws IOException : error
+     */
+    public boolean validateTransactions(TransactionData t, boolean strict) throws IOException {
+        AccountDetailsTO accountDetailsTO = depositAccountService.account(t.getIban())
+                                                    .orElseThrow(() -> depositAccountService.numberFormater(t.getIban()));
+        List<TransactionTO> loadedTransactions = loadTransactions(accountDetailsTO, t.getDateFrom(), LocalDate.now());
 
-		boolean good =stripExpectedTransactions(loadedTransactions, expectedTransactions);
-		if(!good) {
-			return false;
-		}
+        // Now compare the transactions
+        List<TransactionTO> expectedTransactions = t.getTransactions();
+        if (loadedTransactions.size() < expectedTransactions.size() ||
+                    strict && loadedTransactions.size() != expectedTransactions.size()) {
+            logger.error("For account {} loaded transactions of size {} differs from configured transactions of size {}.", t.getIban(), loadedTransactions.size(), expectedTransactions.size());
+            return false;
+        }
 
-		if(strict && !loadedTransactions.isEmpty()) {
-			for (TransactionTO lt : loadedTransactions) {
-				logger.error("Loaded transaction not specified: date {} and amount {} and creditor {}", lt.getBookingDate(), lt.getAmount().getAmount(), lt.getCreditorName());
-			}
-			logger.error("Logged transactions are not supposed to be present in the database.");
-			return false;
-		}
-		return true;
-	}
+        boolean good = stripExpectedTransactions(loadedTransactions, expectedTransactions);
+        if (!good) {
+            return false;
+        }
 
-	/*
-	 * Remove all expected transactions from the list of loaded. Return false if an expected transaction is not
-	 * in the list of loaded transactions.
-	 */
-	private boolean stripExpectedTransactions(List<TransactionTO> loadedTransactions,
-			List<TransactionTO> expectedTransactions) {
-		for (int i = 0; i < expectedTransactions.size(); i++) {
-			TransactionTO expectedTransaction = expectedTransactions.get(i);
-			TransactionTO transactionTO = hasLoadedTransaction(expectedTransaction, loadedTransactions);
-			if(transactionTO!=null) {
-				loadedTransactions.remove(transactionTO);
-			} else {
-				logger.error("Missing transaction with: date {} and amount {} and creditor {}", expectedTransaction.getBookingDate(), expectedTransaction.getAmount().getAmount(), expectedTransaction.getCreditorName());
-				return false;
-			}
-		}
-		return true;
-	}
+        if (strict && !loadedTransactions.isEmpty()) {
+            for (TransactionTO lt : loadedTransactions) {
+                logger.error("Loaded transaction not specified: date {} and amount {} and creditor {}", lt.getBookingDate(), lt.getAmount().getAmount(), lt.getCreditorName());
+            }
+            logger.error("Logged transactions are not supposed to be present in the database.");
+            return false;
+        }
+        return true;
+    }
 
-	private List<TransactionTO> loadTransactions(AccountDetailsTO accountDetailsTO, LocalDate from, LocalDate to)
-			throws IOException {
-		AccountDetailsTO account = depositAccountService.account(accountDetailsTO.getIban())
-				.orElseThrow(() -> depositAccountService.numberFormater(accountDetailsTO.getIban()));
+    /*
+     * Remove all expected transactions from the list of loaded. Return false if an expected transaction is not
+     * in the list of loaded transactions.
+     */
+    private boolean stripExpectedTransactions(List<TransactionTO> loadedTransactions,
+                                              List<TransactionTO> expectedTransactions) {
+        for (TransactionTO expectedTransaction : expectedTransactions) {
+            TransactionTO transactionTO = hasLoadedTransaction(expectedTransaction, loadedTransactions);
+            if (transactionTO != null) {
+                loadedTransactions.remove(transactionTO);
+            } else {
+                logger.error("Missing transaction with: date {} and amount {} and creditor {}", expectedTransaction.getBookingDate(), expectedTransaction.getAmount().getAmount(), expectedTransaction.getCreditorName());
+                return false;
+            }
+        }
+        return true;
+    }
 
-		try {
-			contextService.setContextFromIban(accountDetailsTO.getIban());
-			return ledgersAccount.getTransactionByDates(account.getId(), from, to).getBody();
-		} catch(FeignException f) {
-			throw new IOException(String.format("Error loading transaction for account %s responseCode %s message %s.",
-					accountDetailsTO.getIban(),
-					f.status(), f.getMessage()));
-		} finally {
-			contextService.unsetContext();
-		}
-	}
+    private List<TransactionTO> loadTransactions(AccountDetailsTO accountDetailsTO, LocalDate from, LocalDate to)
+            throws IOException {
+        AccountDetailsTO account = depositAccountService.account(accountDetailsTO.getIban())
+                                           .orElseThrow(() -> depositAccountService.numberFormater(accountDetailsTO.getIban()));
 
-	/*
-	 * Returns the matching tx
-	 */
-	private TransactionTO hasLoadedTransaction(TransactionTO expectedTx, List<TransactionTO> loadedTransactions) {
-		return loadedTransactions.stream().filter(loadedTx -> matchTx(expectedTx, loadedTx))
-		.findFirst().orElse(null);
-	}
+        try {
+            contextService.setContextFromIban(accountDetailsTO.getIban());
+            return ledgersAccount.getTransactionByDates(account.getId(), from, to).getBody();
+        } catch (FeignException f) {
+            throw new IOException(String.format("Error loading transaction for account %s responseCode %s message %s.",
+                    accountDetailsTO.getIban(),
+                    f.status(), f.getMessage()));
+        } finally {
+            contextService.unsetContext();
+        }
+    }
 
-	private boolean matchTx(TransactionTO expectedTransaction, TransactionTO loadedTransaction) {
-		return expectedTransaction.getBookingDate().equals(loadedTransaction.getBookingDate())
-			&&
-		expectedTransaction.getAmount().getAmount().compareTo(loadedTransaction.getAmount().getAmount())==0
-			&&
-		StringUtils.equals(expectedTransaction.getCreditorName(), loadedTransaction.getCreditorName());
-	}
+    /*
+     * Returns the matching tx
+     */
+    private TransactionTO hasLoadedTransaction(TransactionTO expectedTx, List<TransactionTO> loadedTransactions) {
+        return loadedTransactions.stream().filter(loadedTx -> matchTx(expectedTx, loadedTx))
+                       .findFirst().orElse(null);
+    }
+
+    private boolean matchTx(TransactionTO expectedTransaction, TransactionTO loadedTransaction) {
+        return expectedTransaction.getBookingDate().equals(loadedTransaction.getBookingDate())
+                       &&
+                       expectedTransaction.getAmount().getAmount().compareTo(loadedTransaction.getAmount().getAmount()) == 0
+                       &&
+                       StringUtils.equals(expectedTransaction.getCreditorName(), loadedTransaction.getCreditorName());
+    }
 }
