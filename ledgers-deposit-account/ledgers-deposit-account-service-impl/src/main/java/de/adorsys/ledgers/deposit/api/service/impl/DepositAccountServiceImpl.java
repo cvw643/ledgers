@@ -216,7 +216,6 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
         try { //TODO @DMIEX to be refactored, mostly moved to mapper
             AccountStmtBO stmt = accountStmtService.readStmt(ledgerAccountBO, refTime);
             BalanceBO balanceBO = new BalanceBO();
-            BalanceSideBO balanceSide = stmt.getAccount().getBalanceSide();
             AmountBO amount = new AmountBO();
             amount.setCurrency(currency);
             balanceBO.setAmount(amount);
