@@ -220,11 +220,7 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
             AmountBO amount = new AmountBO();
             amount.setCurrency(currency);
             balanceBO.setAmount(amount);
-            if (BalanceSideBO.Cr.equals(balanceSide)) {
-                amount.setAmount(stmt.creditBalance());
-            } else {
-                amount.setAmount(stmt.creditBalance());
-            }
+            amount.setAmount(stmt.creditBalance());
             balanceBO.setBalanceType(BalanceTypeBO.INTERIM_AVAILABLE);
             PostingTraceBO youngestPst = stmt.getYoungestPst();
             balanceBO.setReferenceDate(stmt.getPstTime().toLocalDate());

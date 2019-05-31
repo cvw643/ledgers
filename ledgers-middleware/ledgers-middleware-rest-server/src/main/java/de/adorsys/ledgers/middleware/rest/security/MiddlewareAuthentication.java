@@ -13,10 +13,6 @@ public class MiddlewareAuthentication extends UsernamePasswordAuthenticationToke
 
     private static final long serialVersionUID = -778888356552035882L;
 
-    public MiddlewareAuthentication(Object principal, Object credentials) {
-        super(principal, credentials);
-    }
-
     public MiddlewareAuthentication(Object principal, BearerTokenTO credentials, Collection<? extends GrantedAuthority> authorities) {
         super(principal, credentials, authorities);
     }
@@ -73,8 +69,9 @@ public class MiddlewareAuthentication extends UsernamePasswordAuthenticationToke
         if (UserRoleTO.CUSTOMER == token.getRole()) {
             return token.getAccountAccesses() != null && token.getAccountAccesses().stream()
                                                                  .anyMatch(a -> paymentAccess(a, iban));
+        } else {
+            return UserRoleTO.STAFF == token.getRole();
         }
-        return false;
     }
 
     private static boolean paymentAccess(AccountAccessTO a, String iban) {
