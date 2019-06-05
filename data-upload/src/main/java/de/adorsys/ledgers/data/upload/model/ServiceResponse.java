@@ -1,35 +1,35 @@
 package de.adorsys.ledgers.data.upload.model;
 
 public class ServiceResponse<T> {
-    private boolean isSuccess;
+    private boolean success;
     private T body;
     private String message;
 
     public ServiceResponse(T body) {
-        this.isSuccess = true;
+        this.success = true;
         this.body = body;
     }
 
-    public ServiceResponse(boolean isSuccess, T body) {
-        this.isSuccess = isSuccess;
+    public ServiceResponse(boolean success, T body) {
+        this.success = success;
         this.body = body;
     }
 
     public ServiceResponse() {
-        this.isSuccess = true;
+        this.success = true;
     }
 
     public ServiceResponse(String message) {
-        this.isSuccess = false;
+        this.success = false;
         this.message = message;
     }
 
     public boolean isSuccess() {
-        return isSuccess;
+        return success;
     }
 
-    public ServiceResponse(boolean isSuccess, String message) {
-        this.isSuccess = isSuccess;
+    public ServiceResponse(boolean success, String message) {
+        this.success = success;
         this.message = message;
     }
 

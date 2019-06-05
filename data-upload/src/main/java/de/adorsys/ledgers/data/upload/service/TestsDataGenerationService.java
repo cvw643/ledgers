@@ -20,15 +20,17 @@ import java.util.stream.Collectors;
 
 import static de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO.BULK;
 import static de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO.SINGLE;
+import static java.util.function.Function.identity;
 
 @Service
 public class TestsDataGenerationService {
     private static final String TEST_CREDITOR_IBAN = "DE68370400440000000000";
+    private Random random = new Random();
 
     public DataPayload generateData(DataPayload data, String branch, boolean generatePayments) {
         Map<String, AccountDetailsTO> detailsMap = getNotNullList(data.getAccounts()).stream()
                                                            .map(a -> generateDetails(a, branch))
-                                                           .collect(Collectors.toMap(this::getLastTwoSymbols, a -> a));
+                                                           .collect(Collectors.toMap(this::getLastTwoSymbols, identity()));
         data.setAccounts(new ArrayList<>(detailsMap.values()));
         List<AccountBalance> balances = getNotNullList(data.getBalancesList()).stream()
                                                 .map(b -> generateBalances(b, branch, detailsMap))
@@ -109,10 +111,10 @@ public class TestsDataGenerationService {
     }
 
     private SinglePaymentTO generateSinglePayment(AccountBalance balance, String branch) {
-        String operationId = generatePaymentId(branch);
+        String endToEndId = generateEndToEndId(branch);
         return new SinglePaymentTO(
                 null,
-                operationId,
+                endToEndId,
                 generateReference(balance.getIban(), balance.getCurrency()),
                 generateAmount(balance),
                 generateReference(TEST_CREDITOR_IBAN, balance.getCurrency()),
@@ -134,7 +136,7 @@ public class TestsDataGenerationService {
         int maxAmount = balanceAmount < 3
                                 ? 3
                                 : balanceAmount / 3;
-        long rand = ThreadLocalRandom.current().nextLong(1, maxAmount);
+        int rand = random.nextInt(maxAmount - 1) + 1;
         amount.setAmount(BigDecimal.valueOf(rand));
         return amount;
     }
@@ -150,7 +152,7 @@ public class TestsDataGenerationService {
         return reference;
     }
 
-    private String generatePaymentId(String branchId) {
-        return String.join("_", branchId, String.valueOf(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)), String.valueOf(ThreadLocalRandom.current().nextLong(10000, 99999)));
+    private String generateEndToEndId(String branchId) {
+        return String.join("_", branchId, String.valueOf(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)) + random.nextInt(9), String.valueOf(ThreadLocalRandom.current().nextLong(10000, 99999)));
     }
 }

@@ -69,9 +69,8 @@ public class MiddlewareAuthentication extends UsernamePasswordAuthenticationToke
         if (UserRoleTO.CUSTOMER == token.getRole()) {
             return token.getAccountAccesses() != null && token.getAccountAccesses().stream()
                                                                  .anyMatch(a -> paymentAccess(a, iban));
-        } else {
-            return UserRoleTO.STAFF == token.getRole();
         }
+        return UserRoleTO.STAFF == token.getRole();
     }
 
     private static boolean paymentAccess(AccountAccessTO a, String iban) {

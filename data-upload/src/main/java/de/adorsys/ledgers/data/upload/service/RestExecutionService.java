@@ -82,15 +82,17 @@ public class RestExecutionService {
         Map<PaymentTypeTO, Object> payments = generationService.generatePayments(debtorBalance, data.getBranch());
 
         return payments.entrySet().stream()
-                       .allMatch(entry -> {
-                           try {
-                               paymentRestClient.initiatePayment(entry.getKey(), entry.getValue());
-                               return true;
-                           } catch (Exception e) {
-                               logger.error("{} with body {} failed for some reason", entry.getKey(), entry.getValue());
-                               return false;
-                           }
-                       });
+                       .allMatch(this::performRestPaymentExecute);
+    }
+
+    private boolean performRestPaymentExecute(Map.Entry<PaymentTypeTO, Object> entry) {
+        try {
+            paymentRestClient.initiatePayment(entry.getKey(), entry.getValue());
+            return true;
+        } catch (Exception e) {
+            logger.error("{} with body {} failed for some reason", entry.getKey(), entry.getValue());
+            return false;
+        }
     }
 
     private UploadedData initialiseDataSets(DataPayload payload, String token) {

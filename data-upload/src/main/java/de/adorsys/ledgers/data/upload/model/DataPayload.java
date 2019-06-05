@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class DataPayload {
     public DataPayload() {
     }
 
-    public DataPayload(List<UserTO> users, List<AccountDetailsTO> accounts, List<AccountBalance> balancesList, boolean generatePayments, @Nullable String branch) {
+    public DataPayload(List<UserTO> users, List<AccountDetailsTO> accounts, List<AccountBalance> balancesList, boolean generatePayments, String branch) {
         this.users = users;
         this.accounts = accounts;
         this.balancesList = balancesList;
