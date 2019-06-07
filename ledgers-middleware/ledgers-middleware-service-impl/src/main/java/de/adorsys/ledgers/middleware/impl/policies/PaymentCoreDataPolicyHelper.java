@@ -16,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class PaymentCoreDataPolicyHelper {
-	private static final String UTF_8 = "UTF-8";
 	private static final DecimalFormat decimalFormat = new DecimalFormat("###,###.##");
 	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 

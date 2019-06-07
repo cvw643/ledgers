@@ -16,7 +16,7 @@
 
 package de.adorsys.ledgers.app;
 
-import de.adorsys.ledgers.app.ledgersInitiation.BankInitService;
+import de.adorsys.ledgers.app.initiation.BankInitService;
 import de.adorsys.ledgers.data.upload.service.EnableBatchDataUploadForTpp;
 import de.adorsys.ledgers.deposit.api.service.EnableDepositAccountService;
 import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;

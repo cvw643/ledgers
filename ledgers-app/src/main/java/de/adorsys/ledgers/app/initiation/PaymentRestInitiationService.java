@@ -1,4 +1,4 @@
-package de.adorsys.ledgers.app.ledgersInitiation;
+package de.adorsys.ledgers.app.initiation;
 
 import de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.OpTypeTO;
@@ -40,6 +40,7 @@ public class PaymentRestInitiationService {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidReassigningParameters")
     private void performScaIfRequired(SCAPaymentResponseTO response) {
         //Select Sca Method
         try {

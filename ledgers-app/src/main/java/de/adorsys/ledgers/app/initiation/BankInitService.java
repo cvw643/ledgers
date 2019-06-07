@@ -1,4 +1,4 @@
-package de.adorsys.ledgers.app.ledgersInitiation;
+package de.adorsys.ledgers.app.initiation;
 
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountBO;
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountDetailsBO;
@@ -13,7 +13,6 @@ import de.adorsys.ledgers.middleware.api.domain.payment.SinglePaymentTO;
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
-import de.adorsys.ledgers.middleware.api.service.MiddlewarePaymentService;
 import de.adorsys.ledgers.middleware.impl.converter.AccountDetailsMapper;
 import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
 import de.adorsys.ledgers.mockbank.simple.data.BulkPaymentsData;
@@ -50,7 +49,7 @@ public class BankInitService {
     @Autowired
     public BankInitService(MockbankInitData mockbankInitData, UserService userService, Environment env, UserMapper userMapper,
                            DepositAccountInitService depositAccountInitService, DepositAccountService depositAccountService,
-                           AccountDetailsMapper accountDetailsMapper, MiddlewarePaymentService paymentService, PaymentRestInitiationService restInitiationService) {
+                           AccountDetailsMapper accountDetailsMapper, PaymentRestInitiationService restInitiationService) {
         this.mockbankInitData = mockbankInitData;
         this.userService = userService;
         this.env = env;
@@ -74,6 +73,7 @@ public class BankInitService {
         //performTransactions(); //TODO Currently dupes bulk payments. Fix next MR. Add Separate Profiles to include/exclude payments
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void performTransactions() {
         List<UserTO> users = mockbankInitData.getUsers();
         performSinglePayments(users);
