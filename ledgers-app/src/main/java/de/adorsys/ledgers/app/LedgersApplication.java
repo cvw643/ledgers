@@ -32,10 +32,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
@@ -49,14 +47,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableBatchDataUploadForTpp
 @EnableFeignClients(basePackageClasses = AccountRestClient.class)
 public class LedgersApplication implements ApplicationListener<ApplicationReadyEvent> {
-    private final ApplicationContext context;
-    private final Environment env;
     private final BankInitService bankInitService;
 
     @Autowired
-    public LedgersApplication(ApplicationContext context, Environment env, BankInitService bankInitService) {
-        this.context = context;
-        this.env = env;
+    public LedgersApplication(BankInitService bankInitService) {
         this.bankInitService = bankInitService;
     }
 
@@ -67,9 +61,6 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         bankInitService.init();
-        /*if (Arrays.asList(env.getActiveProfiles()).contains("develop")) {
-            context.getBean(MockBankSimpleInitService.class).runInit();
-        }*/
     }
 
     // enabled when mock-smtp maven profile is active

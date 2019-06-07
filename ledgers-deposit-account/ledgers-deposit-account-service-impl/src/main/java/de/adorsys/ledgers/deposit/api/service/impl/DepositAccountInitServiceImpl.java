@@ -100,15 +100,16 @@ public class DepositAccountInitServiceImpl implements DepositAccountInitService 
     }
 
     private LedgerAccountBO getParentLedgerAccount(LedgerBO ledger, LedgerAccountModel model) {
+        LedgerAccountBO parent = null;
         if (model.getParent() != null) {
             try {
-                return ledgerService.findLedgerAccount(ledger, model.getParent());
+                parent = ledgerService.findLedgerAccount(ledger, model.getParent());
             } catch (LedgerNotFoundException | LedgerAccountNotFoundException e) {
                 throw new IllegalStateException(
                         String.format("Missing ledger account with id %s", model.getParent()));
             }
         }
-        return new LedgerAccountBO();
+        return parent;
     }
 
     private LedgerAccountBO newLedgerAccountObj(LedgerBO ledger, LedgerAccountModel model, LedgerAccountBO parent) {

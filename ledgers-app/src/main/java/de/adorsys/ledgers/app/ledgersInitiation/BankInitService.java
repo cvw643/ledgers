@@ -1,18 +1,18 @@
 package de.adorsys.ledgers.app.ledgersInitiation;
 
+import de.adorsys.ledgers.deposit.api.domain.DepositAccountBO;
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountDetailsBO;
 import de.adorsys.ledgers.deposit.api.domain.TransactionDetailsBO;
 import de.adorsys.ledgers.deposit.api.exception.DepositAccountNotFoundException;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountInitService;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountService;
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
+import de.adorsys.ledgers.middleware.api.domain.payment.BulkPaymentTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.SinglePaymentTO;
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
+import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
-import de.adorsys.ledgers.middleware.api.exception.AccountNotFoundMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.NoAccessMiddlewareException;
-import de.adorsys.ledgers.middleware.api.exception.PaymentWithIdMiddlewareException;
 import de.adorsys.ledgers.middleware.api.service.MiddlewarePaymentService;
 import de.adorsys.ledgers.middleware.impl.converter.AccountDetailsMapper;
 import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
@@ -42,10 +42,15 @@ public class BankInitService {
     private final DepositAccountInitService depositAccountInitService;
     private final DepositAccountService depositAccountService;
     private final AccountDetailsMapper accountDetailsMapper;
-    private final MiddlewarePaymentService paymentService;
+    private final PaymentRestInitiationService restInitiationService;
+
+    private static final String ACCOUNT_NOT_FOUND_MSG = "Account not Found! Should never happen while initiating mock data!";
+    private static final String NO_USER_BY_IBAN = "Could not get User By Iban {}";
 
     @Autowired
-    public BankInitService(MockbankInitData mockbankInitData, UserService userService, Environment env, UserMapper userMapper, DepositAccountInitService depositAccountInitService, DepositAccountService depositAccountService, AccountDetailsMapper accountDetailsMapper, MiddlewarePaymentService paymentService) {
+    public BankInitService(MockbankInitData mockbankInitData, UserService userService, Environment env, UserMapper userMapper,
+                           DepositAccountInitService depositAccountInitService, DepositAccountService depositAccountService,
+                           AccountDetailsMapper accountDetailsMapper, MiddlewarePaymentService paymentService, PaymentRestInitiationService restInitiationService) {
         this.mockbankInitData = mockbankInitData;
         this.userService = userService;
         this.env = env;
@@ -53,7 +58,7 @@ public class BankInitService {
         this.depositAccountInitService = depositAccountInitService;
         this.depositAccountService = depositAccountService;
         this.accountDetailsMapper = accountDetailsMapper;
-        this.paymentService = paymentService;
+        this.restInitiationService = restInitiationService;
     }
 
     public void init() {
@@ -66,58 +71,83 @@ public class BankInitService {
     private void uploadTestData() {
         createUsers();
         createAccounts();
-        performTransactions();
+        //performTransactions(); //TODO Currently dupes bulk payments. Fix next MR. Add Separate Profiles to include/exclude payments
     }
 
     private void performTransactions() {
-        performSinglePayments();
-        performBulkPayments();
+        List<UserTO> users = mockbankInitData.getUsers();
+        performSinglePayments(users);
+        performBulkPayments(users);
     }
 
-    private void performSinglePayments() {
+    private void performSinglePayments(List<UserTO> users) {
         for (SinglePaymentsData paymentsData : mockbankInitData.getSinglePayments()) {
+            SinglePaymentTO payment = paymentsData.getSinglePayment();
             try {
-                if (transactionIsAbsent(paymentsData.getSinglePayment())) {
-                    paymentService.initiatePayment(paymentsData.getSinglePayment(), PaymentTypeTO.SINGLE);
+                if (transactionIsAbsent(payment.getDebtorAccount().getIban(), payment.getEndToEndIdentification())) {
+                    UserTO user = getUserByIban(users, payment.getDebtorAccount().getIban());
+                    restInitiationService.executePayment(user, PaymentTypeTO.SINGLE, payment);
                 }
-            } catch (AccountNotFoundMiddlewareException | NoAccessMiddlewareException |
-                             PaymentWithIdMiddlewareException | DepositAccountNotFoundException e) {
-                logger.error("Account not Found! Should never happen while initiating mock data!");
-            }
-        }
-    }
-    private void performBulkPayments() {
-        for (BulkPaymentsData paymentsData : mockbankInitData.getBulkPayments()) {
-            try {
-                if (transactionIsAbsent(paymentsData.getBulkPayment().getPayments().get(0))) {
-                    paymentService.initiatePayment(paymentsData.getBulkPayment(), PaymentTypeTO.SINGLE);
-                }
-            } catch (AccountNotFoundMiddlewareException | NoAccessMiddlewareException |
-                             PaymentWithIdMiddlewareException | DepositAccountNotFoundException e) {
-                logger.error("Account not Found! Should never happen while initiating mock data!");
+            } catch (DepositAccountNotFoundException e) {
+                logger.error(ACCOUNT_NOT_FOUND_MSG);
+            } catch (UserNotFoundException e) {
+                logger.error(NO_USER_BY_IBAN, payment.getDebtorAccount().getIban());
             }
         }
     }
 
-    private boolean transactionIsAbsent(SinglePaymentTO payment) throws DepositAccountNotFoundException {
-        DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(payment.getDebtorAccount().getIban(), LocalDateTime.now(), false);
-        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), payment.getRequestedExecutionDate().atStartOfDay(), payment.getRequestedExecutionDate().plusDays(1).atStartOfDay());
-        return transactions.stream().noneMatch(t -> t.getEndToEndId().equals(payment.getEndToEndIdentification()));
+    private void performBulkPayments(List<UserTO> users) {
+        for (BulkPaymentsData paymentsData : mockbankInitData.getBulkPayments()) {
+            BulkPaymentTO payment = paymentsData.getBulkPayment();
+            try {
+                if (transactionIsAbsent(payment.getDebtorAccount().getIban(), payment.getPayments().get(0).getEndToEndIdentification())) {
+                    UserTO user = getUserByIban(users, payment.getDebtorAccount().getIban());
+                    restInitiationService.executePayment(user, PaymentTypeTO.BULK, payment);
+                }
+            } catch (DepositAccountNotFoundException e) {
+                logger.error(ACCOUNT_NOT_FOUND_MSG);
+            } catch (UserNotFoundException e) {
+                logger.error(NO_USER_BY_IBAN, payment.getDebtorAccount().getIban());
+            }
+        }
+    }
+
+    private UserTO getUserByIban(List<UserTO> users, String iban) throws UserNotFoundException {
+        return users.stream()
+                       .filter(user -> ibanIsInAccess(iban, user))
+                       .findFirst()
+                       .orElseThrow(UserNotFoundException::new);
+    }
+
+    private boolean ibanIsInAccess(String iban, UserTO user) {
+        return user.getAccountAccesses().stream()
+                       .anyMatch(access -> access.getIban().equals(iban));
+    }
+
+    private boolean transactionIsAbsent(String iban, String entToEndId) throws DepositAccountNotFoundException {
+        DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(iban, LocalDateTime.now(), false);
+        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), LocalDateTime.of(2018, 1, 1, 1, 1), LocalDateTime.now());
+        return transactions.stream()
+                       .noneMatch(t -> entToEndId.equals(t.getEndToEndId()));
     }
 
     private void createAccounts() {
         for (AccountDetailsTO details : mockbankInitData.getAccounts()) {
             try {
-                DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(details.getIban(), LocalDateTime.now(), false);
-                if (account == null) {
-                    String userName = getUserNameByIban(details.getIban());
-                    depositAccountService.createDepositAccount(accountDetailsMapper.toDepositAccountBO(details), userName);
-                }
+                depositAccountService.getDepositAccountByIban(details.getIban(), LocalDateTime.now(), false);
             } catch (DepositAccountNotFoundException e) {
-                logger.error("Account not Found! Should never happen while initiating mock data!");
-            } catch (UserNotFoundException e) {
-                logger.error("User for account {} not found! Should never happen while initiating mock data!", details.getIban());
+                createAccount(details);
             }
+        }
+    }
+
+    private void createAccount(AccountDetailsTO details) {
+        try {
+            String userName = getUserNameByIban(details.getIban());
+            DepositAccountBO accountBO = accountDetailsMapper.toDepositAccountBO(details);
+            depositAccountService.createDepositAccount(accountBO, userName);
+        } catch (UserNotFoundException | DepositAccountNotFoundException e) {
+            logger.error("Error creating Account For Mocked User");
         }
     }
 
@@ -139,6 +169,7 @@ public class BankInitService {
             try {
                 userService.findByLogin(user.getLogin());
             } catch (UserNotFoundException e) {
+                user.getUserRoles().add(UserRoleTO.CUSTOMER);
                 createUser(user);
             }
         }
