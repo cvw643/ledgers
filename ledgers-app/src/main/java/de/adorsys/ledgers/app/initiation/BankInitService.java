@@ -7,6 +7,7 @@ import de.adorsys.ledgers.deposit.api.exception.DepositAccountNotFoundException;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountInitService;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountService;
 import de.adorsys.ledgers.middleware.api.domain.account.AccountDetailsTO;
+import de.adorsys.ledgers.middleware.api.domain.payment.AmountTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.BulkPaymentTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.PaymentTypeTO;
 import de.adorsys.ledgers.middleware.api.domain.payment.SinglePaymentTO;
@@ -27,8 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -62,6 +65,7 @@ public class BankInitService {
 
     public void init() {
         depositAccountInitService.initConfigData();
+        createAdmin();
         if (Arrays.asList(this.env.getActiveProfiles()).contains("develop")) {
             uploadTestData();
         }
@@ -70,10 +74,20 @@ public class BankInitService {
     private void uploadTestData() {
         createUsers();
         createAccounts();
-        //performTransactions(); //TODO Currently dupes bulk payments. Fix next MR. Add Separate Profiles to include/exclude payments
+        performTransactions();
     }
 
-    @SuppressWarnings("PMD.UnusedPrivateMethod")
+    private void createAdmin() {
+        try {
+            userService.findByLogin("admin");
+            UserTO admin = new UserTO("admin", "admin@mail.de", "admin123");
+            admin.setUserRoles(Collections.singleton(UserRoleTO.SYSTEM));
+            createUser(admin);
+        } catch (UserNotFoundException e) {
+            logger.error("Admin user is already present. Skipping creation");
+        }
+    }
+
     private void performTransactions() {
         List<UserTO> users = mockbankInitData.getUsers();
         performSinglePayments(users);
@@ -84,7 +98,7 @@ public class BankInitService {
         for (SinglePaymentsData paymentsData : mockbankInitData.getSinglePayments()) {
             SinglePaymentTO payment = paymentsData.getSinglePayment();
             try {
-                if (transactionIsAbsent(payment.getDebtorAccount().getIban(), payment.getEndToEndIdentification())) {
+                if (isAbsentTransactionRegular(payment.getDebtorAccount().getIban(), payment.getEndToEndIdentification())) {
                     UserTO user = getUserByIban(users, payment.getDebtorAccount().getIban());
                     restInitiationService.executePayment(user, PaymentTypeTO.SINGLE, payment);
                 }
@@ -100,7 +114,13 @@ public class BankInitService {
         for (BulkPaymentsData paymentsData : mockbankInitData.getBulkPayments()) {
             BulkPaymentTO payment = paymentsData.getBulkPayment();
             try {
-                if (transactionIsAbsent(payment.getDebtorAccount().getIban(), payment.getPayments().get(0).getEndToEndIdentification())) {
+                boolean isAbsentTransaction;
+                if (payment.getBatchBookingPreferred()) {
+                    isAbsentTransaction = isAbsentTransactionBatch(payment);
+                } else {
+                    isAbsentTransaction = isAbsentTransactionRegular(payment.getDebtorAccount().getIban(), payment.getPayments().iterator().next().getEndToEndIdentification());
+                }
+                if (isAbsentTransaction) {
                     UserTO user = getUserByIban(users, payment.getDebtorAccount().getIban());
                     restInitiationService.executePayment(user, PaymentTypeTO.BULK, payment);
                 }
@@ -110,6 +130,25 @@ public class BankInitService {
                 logger.error(NO_USER_BY_IBAN, payment.getDebtorAccount().getIban());
             }
         }
+    }
+
+    private boolean isAbsentTransactionBatch(BulkPaymentTO payment) throws DepositAccountNotFoundException {
+        boolean isAbsentTransaction;
+        DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(payment.getDebtorAccount().getIban(), LocalDateTime.now(), false);
+        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), LocalDateTime.of(2018, 1, 1, 1, 1), LocalDateTime.now());
+        BigDecimal total = BigDecimal.ZERO.subtract(payment.getPayments().stream()
+                                                            .map(SinglePaymentTO::getInstructedAmount)
+                                                            .map(AmountTO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, 5));
+        isAbsentTransaction = transactions.stream()
+                                      .noneMatch(t -> t.getTransactionAmount().getAmount().equals(total));
+        return isAbsentTransaction;
+    }
+
+    private boolean isAbsentTransactionRegular(String iban, String entToEndId) throws DepositAccountNotFoundException {
+        DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(iban, LocalDateTime.now(), false);
+        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), LocalDateTime.of(2018, 1, 1, 1, 1), LocalDateTime.now());
+        return transactions.stream()
+                       .noneMatch(t -> entToEndId.equals(t.getEndToEndId()));
     }
 
     private UserTO getUserByIban(List<UserTO> users, String iban) throws UserNotFoundException {
@@ -122,13 +161,6 @@ public class BankInitService {
     private boolean ibanIsInAccess(String iban, UserTO user) {
         return user.getAccountAccesses().stream()
                        .anyMatch(access -> access.getIban().equals(iban));
-    }
-
-    private boolean transactionIsAbsent(String iban, String entToEndId) throws DepositAccountNotFoundException {
-        DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(iban, LocalDateTime.now(), false);
-        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), LocalDateTime.of(2018, 1, 1, 1, 1), LocalDateTime.now());
-        return transactions.stream()
-                       .noneMatch(t -> entToEndId.equals(t.getEndToEndId()));
     }
 
     private void createAccounts() {

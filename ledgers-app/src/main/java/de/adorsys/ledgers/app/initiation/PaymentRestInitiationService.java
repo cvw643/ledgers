@@ -35,6 +35,7 @@ public class PaymentRestInitiationService {
             SCAPaymentResponseTO response = paymentRestClient.initiatePayment(paymentType, payment).getBody();
             logger.info("Payment from: {}, successfully committed, payment ID: {}, transaction status: {}", user.getLogin(), response.getPaymentId(), response.getTransactionStatus());
             performScaIfRequired(response);
+            logger.info("Payment finalized!");
         } catch (FeignException e) {
             logger.error("Payment from: {}, failed due to: {}", user.getLogin(), e.getMessage());
         }
@@ -68,26 +69,4 @@ public class PaymentRestInitiationService {
             logger.error("Could not Login user: {}, error: {}", user.getLogin(), e.getMessage());
         }
     }
-
-    /*private void loginUser(UserTO user) {
-        try {
-            //Login
-            String id = Ids.id();
-            SCALoginResponseTO response = userMgmtRestClient.authoriseForConsent(user.getLogin(), user.getPin(), id, id, OpTypeTO.PAYMENT).getBody();
-            //SCALoginResponseTO response = userMgmtRestClient.authorise(user.getLogin(), user.getPin(), UserRoleTO.CUSTOMER).getBody();
-            authRequestInterceptor.setAccessToken(response.getBearerToken().getAccess_token());
-            //Select Sca Method
-            if (response.getScaStatus() == ScaStatusTO.PSUIDENTIFIED) {
-                response = userMgmtRestClient.selectMethod(response.getScaId(), response.getAuthorisationId(), response.getScaMethods().get(0).getId()).getBody();
-                authRequestInterceptor.setAccessToken(response.getBearerToken().getAccess_token());
-            }
-            //Confirm TAN
-            if (response.getScaStatus() == ScaStatusTO.SCAMETHODSELECTED) {
-                response = userMgmtRestClient.authorizeLogin(response.getScaId(), response.getAuthorisationId(), "123456").getBody();
-                authRequestInterceptor.setAccessToken(response.getBearerToken().getAccess_token());
-            }
-        } catch (FeignException e) {
-            logger.error("Could not Login user: {}, error: {}", user.getLogin(), e.getMessage());
-        }
-    }*/
 }
