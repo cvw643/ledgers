@@ -97,18 +97,11 @@ public class UserServiceImpl implements UserService {
             userPO.setId(Ids.id());
         }
 
-        userPO.setPin(passwordEnc.encode(userPO.getId(), user.getPin()));
+        // check if user with given email or login already exists
+        checkUserAlreadyExists(user);
 
-        try {
-            return userConverter.toUserBO(userRepository.save(userPO));
-        } catch (ConstraintViolationException c) {
-            if (UserEntity.USER_EMAIL_UNIQUE.equals(c.getConstraintName()) ||   //TODO by @speex Let's UserAlreadyExistsException will decide what to do, just pass user and exception args to it
-                        UserEntity.USER_LOGIN_UNIQUE.equals(c.getConstraintName())) {
-                throw new UserAlreadyExistsException(user, c);
-            } else {
-                throw new UserAlreadyExistsException(c.getMessage(), c);
-            }
-        }
+        userPO.setPin(passwordEnc.encode(userPO.getId(), user.getPin()));
+        return userConverter.toUserBO(userRepository.save(userPO));
     }
 
     @Override
