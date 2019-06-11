@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserServiceImpl implements UserService {
 
     private static final String NO_TRANSACTION_ACCESS_USER_DOES_NOT_HAVE_ACCESS = "No transaction access. User with id %s does not have access to accounts %s";
