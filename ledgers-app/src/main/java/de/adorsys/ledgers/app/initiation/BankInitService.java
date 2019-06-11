@@ -25,22 +25,20 @@ import de.adorsys.ledgers.um.api.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @Service
 public class BankInitService {
+    private final Logger logger = LoggerFactory.getLogger(BankInitService.class);
+
     private final MockbankInitData mockbankInitData;
     private final UserService userService;
-    private final Environment env;
     private final UserMapper userMapper;
-    private final Logger logger = LoggerFactory.getLogger(BankInitService.class);
     private final DepositAccountInitService depositAccountInitService;
     private final DepositAccountService depositAccountService;
     private final AccountDetailsMapper accountDetailsMapper;
@@ -48,14 +46,14 @@ public class BankInitService {
 
     private static final String ACCOUNT_NOT_FOUND_MSG = "Account not Found! Should never happen while initiating mock data!";
     private static final String NO_USER_BY_IBAN = "Could not get User By Iban {}";
+    private static final LocalDateTime START_DATE = LocalDateTime.of(2018, 1, 1, 1, 1);
 
     @Autowired
-    public BankInitService(MockbankInitData mockbankInitData, UserService userService, Environment env, UserMapper userMapper,
+    public BankInitService(MockbankInitData mockbankInitData, UserService userService, UserMapper userMapper,
                            DepositAccountInitService depositAccountInitService, DepositAccountService depositAccountService,
                            AccountDetailsMapper accountDetailsMapper, PaymentRestInitiationService restInitiationService) {
         this.mockbankInitData = mockbankInitData;
         this.userService = userService;
-        this.env = env;
         this.userMapper = userMapper;
         this.depositAccountInitService = depositAccountInitService;
         this.depositAccountService = depositAccountService;
@@ -66,12 +64,9 @@ public class BankInitService {
     public void init() {
         depositAccountInitService.initConfigData();
         createAdmin();
-        if (Arrays.asList(this.env.getActiveProfiles()).contains("develop")) {
-            uploadTestData();
-        }
     }
 
-    private void uploadTestData() {
+    public void uploadTestData() {
         createUsers();
         createAccounts();
         performTransactions();
@@ -135,7 +130,7 @@ public class BankInitService {
     private boolean isAbsentTransactionBatch(BulkPaymentTO payment) throws DepositAccountNotFoundException {
         boolean isAbsentTransaction;
         DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(payment.getDebtorAccount().getIban(), LocalDateTime.now(), false);
-        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), LocalDateTime.of(2018, 1, 1, 1, 1), LocalDateTime.now());
+        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), START_DATE, LocalDateTime.now());
         BigDecimal total = BigDecimal.ZERO.subtract(payment.getPayments().stream()
                                                             .map(SinglePaymentTO::getInstructedAmount)
                                                             .map(AmountTO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, 5));
@@ -146,21 +141,16 @@ public class BankInitService {
 
     private boolean isAbsentTransactionRegular(String iban, String entToEndId) throws DepositAccountNotFoundException {
         DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(iban, LocalDateTime.now(), false);
-        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), LocalDateTime.of(2018, 1, 1, 1, 1), LocalDateTime.now());
+        List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), START_DATE, LocalDateTime.now());
         return transactions.stream()
                        .noneMatch(t -> entToEndId.equals(t.getEndToEndId()));
     }
 
     private UserTO getUserByIban(List<UserTO> users, String iban) throws UserNotFoundException {
         return users.stream()
-                       .filter(user -> ibanIsInAccess(iban, user))
+                       .filter(user -> isAccountContainedInAccess(user.getAccountAccesses(), iban))
                        .findFirst()
                        .orElseThrow(UserNotFoundException::new);
-    }
-
-    private boolean ibanIsInAccess(String iban, UserTO user) {
-        return user.getAccountAccesses().stream()
-                       .anyMatch(access -> access.getIban().equals(iban));
     }
 
     private void createAccounts() {

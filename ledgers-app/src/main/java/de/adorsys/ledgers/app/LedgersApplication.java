@@ -34,7 +34,10 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.util.Arrays;
 
 @EnableScheduling
 @SpringBootApplication
@@ -48,10 +51,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackageClasses = AccountRestClient.class)
 public class LedgersApplication implements ApplicationListener<ApplicationReadyEvent> {
     private final BankInitService bankInitService;
+    private final Environment env;
 
     @Autowired
-    public LedgersApplication(BankInitService bankInitService) {
+    public LedgersApplication(BankInitService bankInitService, Environment env) {
         this.bankInitService = bankInitService;
+        this.env = env;
     }
 
     public static void main(String[] args) {
@@ -61,6 +66,9 @@ public class LedgersApplication implements ApplicationListener<ApplicationReadyE
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         bankInitService.init();
+        if (Arrays.asList(this.env.getActiveProfiles()).contains("develop")) {
+            bankInitService.uploadTestData();
+        }
     }
 
     // enabled when mock-smtp maven profile is active
