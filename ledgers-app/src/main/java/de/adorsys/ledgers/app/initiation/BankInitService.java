@@ -1,5 +1,8 @@
 package de.adorsys.ledgers.app.initiation;
 
+import de.adorsys.ledgers.app.mock.BulkPaymentsData;
+import de.adorsys.ledgers.app.mock.MockbankInitData;
+import de.adorsys.ledgers.app.mock.SinglePaymentsData;
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountBO;
 import de.adorsys.ledgers.deposit.api.domain.DepositAccountDetailsBO;
 import de.adorsys.ledgers.deposit.api.domain.TransactionDetailsBO;
@@ -16,9 +19,6 @@ import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import de.adorsys.ledgers.middleware.impl.converter.AccountDetailsMapper;
 import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
-import de.adorsys.ledgers.mockbank.simple.data.BulkPaymentsData;
-import de.adorsys.ledgers.mockbank.simple.data.MockbankInitData;
-import de.adorsys.ledgers.mockbank.simple.data.SinglePaymentsData;
 import de.adorsys.ledgers.um.api.exception.UserAlreadyExistsException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
