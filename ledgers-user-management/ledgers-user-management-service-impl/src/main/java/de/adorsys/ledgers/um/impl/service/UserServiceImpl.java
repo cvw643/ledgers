@@ -347,6 +347,26 @@ public class UserServiceImpl implements UserService {
         return userOptional.get();
     }
 
+    private void checkUserAlreadyExists(UserBO userBO) {
+        //check if user with the given login exists
+        Optional<UserEntity> user = userRepository.findFirstByLogin(userBO.getLogin());
+        if(user.isPresent()) {
+            String message = String.format("User with this login already exists. Login %s.",
+                                           userBO.getLogin());
+            logger.error(message);
+            throw new UserAlreadyExistsException(message);
+        }
+
+        // check if user with the given email exists
+        user = userRepository.findFirstByEmail(userBO.getEmail());
+        if(user.isPresent()) {
+            String message = String.format("User with this email already exists. Email %s.",
+                                           userBO.getLogin());
+            logger.error(message);
+            throw new UserAlreadyExistsException(message);
+        }
+    }
+
     private void validateAccountAcesses(UserEntity userEntity, AccessTokenBO accessTokenJWT) throws InsufficientPermissionException {
         List<AccountAccess> accountAccessesFromToken = userConverter.toAccountAccessListEntity(accessTokenJWT.getAccountAccesses());
         for (AccountAccess accountAccessFT : accountAccessesFromToken) {
