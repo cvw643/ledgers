@@ -88,7 +88,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserBO create(UserBO user) throws UserAlreadyExistsException {
+    public UserBO create(UserBO user) {
+        // check if user with given email or login already exists
+        checkUserAlreadyExists(user);
+
         UserEntity userPO = userConverter.toUserPO(user);
 
         // if user is TPP and has an ID than do not reset it
@@ -97,8 +100,6 @@ public class UserServiceImpl implements UserService {
             userPO.setId(Ids.id());
         }
 
-        // check if user with given email or login already exists
-        checkUserAlreadyExists(user);
 
         userPO.setPin(passwordEnc.encode(userPO.getId(), user.getPin()));
         return userConverter.toUserBO(userRepository.save(userPO));
