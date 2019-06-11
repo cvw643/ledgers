@@ -34,7 +34,6 @@ import de.adorsys.ledgers.util.Ids;
 import de.adorsys.ledgers.util.PasswordEnc;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.hibernate.exception.ConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -342,20 +341,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUserAlreadyExists(UserBO userBO) {
-        //check if user with the given login exists
-        Optional<UserEntity> user = userRepository.findFirstByLogin(userBO.getLogin());
-        if(user.isPresent()) {
-            String message = String.format("User with this login already exists. Login %s.",
-                                           userBO.getLogin());
-            logger.error(message);
-            throw new UserAlreadyExistsException(message);
-        }
-
-        // check if user with the given email exists
-        user = userRepository.findFirstByEmail(userBO.getEmail());
-        if(user.isPresent()) {
-            String message = String.format("User with this email already exists. Email %s.",
-                                           userBO.getLogin());
+        // check if user with the given email or login exists
+        Optional<UserEntity> user = userRepository.findByEmailOrLogin(userBO.getEmail(), userBO.getLogin());
+        if (user.isPresent()) {
+            String message = String.format("User with this email or login already exists. Email %s. Login %s.",
+                                           userBO.getEmail(), userBO.getLogin());
             logger.error(message);
             throw new UserAlreadyExistsException(message);
         }
