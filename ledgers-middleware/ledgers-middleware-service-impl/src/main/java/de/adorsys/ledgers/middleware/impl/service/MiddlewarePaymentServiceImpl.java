@@ -113,7 +113,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
             TransactionStatusBO paymentStatus = paymentService.getPaymentStatusById(paymentId);
             return TransactionStatusTO.valueOf(paymentStatus.name());
         } catch (PaymentNotFoundException e) {
-            logger.error("Payment with id=" + paymentId + " not found");
+            logger.error("Payment with id: {} not found", paymentId);
             throw new PaymentNotFoundMiddlewareException(e.getMessage(), e);
         }
     }
@@ -195,7 +195,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
         }
         try {
             return paymentService.initiatePayment(paymentBO, status);
-        } catch (PaymentWithIdExistsException e) {
+        } catch (PaymentWithIdExistsException | DepositAccountNotFoundException e) {
             throw new PaymentWithIdMiddlewareException(e.getMessage(), e);
         }
     }
