@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings("PMD.TooManyMethods") // TODO: refactor class: issue #228
 public class UserServiceImpl implements UserService {
 
     private static final String NO_TRANSACTION_ACCESS_USER_DOES_NOT_HAVE_ACCESS = "No transaction access. User with id %s does not have access to accounts %s";
@@ -342,7 +342,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUserAlreadyExists(UserBO userBO) {
-        // check if user with the given email or login exists
         Optional<UserEntity> user = userRepository.findByEmailOrLogin(userBO.getEmail(), userBO.getLogin());
         if (user.isPresent()) {
             String message = String.format("User with this email or login already exists. Email %s. Login %s.",
