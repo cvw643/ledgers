@@ -89,7 +89,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserBO create(UserBO user) {
-        // check if user with given email or login already exists
         checkUserAlreadyExists(user);
 
         UserEntity userPO = userConverter.toUserPO(user);
