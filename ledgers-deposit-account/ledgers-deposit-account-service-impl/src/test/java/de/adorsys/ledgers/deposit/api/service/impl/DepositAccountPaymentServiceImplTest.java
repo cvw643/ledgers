@@ -91,7 +91,7 @@ public class DepositAccountPaymentServiceImplTest {
         assertThat(result).isNotNull();
     }
 
-    @Test(expected = InsufficientFundsException.class)
+    @Test(expected = DepositAccountInsufficientFundsException.class)
     public void initiatePayment_insufficientFunds() throws PaymentWithIdExistsException, DepositAccountNotFoundException {
         when(paymentMapper.toPayment(any())).thenReturn(getSinglePayment());
         when(paymentMapper.toPaymentBO(any())).thenReturn(getSinglePaymentBO());

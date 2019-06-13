@@ -88,7 +88,7 @@ public class DepositAccountPaymentServiceImpl extends AbstractServiceImpl implem
             return paymentMapper.toPaymentBO(savedPayment);
         } else {
             persistedPayment.setTransactionStatus(TransactionStatus.RJCT);
-           throw new InsufficientFundsException(paymentMapper.toPaymentBO(persistedPayment));
+           throw new DepositAccountInsufficientFundsException(paymentMapper.toPaymentBO(persistedPayment));
         }
     }
 
