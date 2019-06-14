@@ -24,6 +24,7 @@ import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
 import de.adorsys.ledgers.um.api.exception.UserAlreadyExistsException;
 import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +82,7 @@ public class BankInitService {
             userService.findByLogin("admin");
             logger.error("Admin user is already present. Skipping creation");
         } catch (UserNotFoundException e) {
-            UserTO admin = new UserTO("admin", "admin@mail.de", "admin123");
+            UserTO admin = new UserTO("admin", "admin@mail.de", "admin123"); //TODO Matter of refactoring
             admin.setUserRoles(Collections.singleton(UserRoleTO.SYSTEM));
             createUser(admin);
         }
@@ -162,7 +163,7 @@ public class BankInitService {
             try {
                 depositAccountService.getDepositAccountByIban(details.getIban(), LocalDateTime.now(), false);
             } catch (DepositAccountNotFoundException e) {
-                createAccount(details)
+                createAccount(details)      //TODO Matter of refactoring
                         .ifPresent(a -> updateBalanceIfRequired(details, a));
             }
         }
@@ -184,7 +185,7 @@ public class BankInitService {
 
     private Optional<BigDecimal> getBalanceFromInitData(AccountDetailsTO details) {
         return mockbankInitData.getBalances().stream()
-                       .filter(b -> b.getAccNbr().equals(details.getIban()))
+                       .filter(b -> StringUtils.equals(b.getAccNbr(), details.getIban()))
                        .findFirst()
                        .map(AccountBalance::getBalance);
     }
