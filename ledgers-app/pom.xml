@@ -111,23 +111,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Upload dependency -->
-
-        <dependency>
-            <groupId>de.adorsys.ledgers</groupId>
-            <artifactId>data-upload</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- user management -->
-        <!--
-        <dependency>
-            <groupId>de.adorsys.ledgers</groupId>
-            <artifactId>ledgers-user-management-rest-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-         -->
-
         <dependency>
             <groupId>de.adorsys.ledgers</groupId>
             <artifactId>ledgers-user-management-service-api</artifactId>
@@ -149,6 +132,18 @@
         <dependency>
             <groupId>de.adorsys.ledgers</groupId>
             <artifactId>ledgers-db</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.adorsys.ledgers</groupId>
+            <artifactId>ledgers-middleware-rest-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.adorsys.ledgers</groupId>
+            <artifactId>ledgers-middleware-rest-client</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -176,6 +171,11 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-openfeign-core</artifactId>
+            <version>2.1.0.RELEASE</version>
         </dependency>
 
         <!-- other dependencies -->
