@@ -141,12 +141,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>de.adorsys.ledgers</groupId>
-            <artifactId>ledgers-middleware-rest-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <!-- spring dependency -->
 
         <dependency>
