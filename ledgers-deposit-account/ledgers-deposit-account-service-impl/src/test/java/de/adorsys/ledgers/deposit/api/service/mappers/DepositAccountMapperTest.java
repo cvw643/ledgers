@@ -16,8 +16,6 @@ import org.mockito.Mock;
 import java.util.Currency;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(org.mockito.junit.MockitoJUnitRunner.class)
 public class DepositAccountMapperTest {
@@ -29,7 +27,6 @@ public class DepositAccountMapperTest {
 
     @Test
     public void toDepositAccountBO() {
-        when(currencyMapper.toCurrency(any())).thenReturn(Currency.getInstance("EUR"));
         DepositAccountBO account = depositAccountMapper.toDepositAccountBO(getDepositAccount());
 
         //Then
@@ -38,7 +35,6 @@ public class DepositAccountMapperTest {
 
     @Test
     public void toDepositAccount() {
-        when(currencyMapper.currencyToString(any())).thenReturn("EUR");
         DepositAccount account = depositAccountMapper.toDepositAccount(getDepositAccountBO());
 
         //Then

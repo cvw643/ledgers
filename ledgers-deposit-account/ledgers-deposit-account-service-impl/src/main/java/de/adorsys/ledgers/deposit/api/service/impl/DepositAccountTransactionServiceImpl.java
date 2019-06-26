@@ -16,61 +16,37 @@
 
 package de.adorsys.ledgers.deposit.api.service.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Currency;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.adorsys.ledgers.deposit.api.domain.AmountBO;
-import de.adorsys.ledgers.deposit.api.domain.PaymentBO;
-import de.adorsys.ledgers.deposit.api.domain.PaymentProductBO;
-import de.adorsys.ledgers.deposit.api.domain.PaymentTargetBO;
-import de.adorsys.ledgers.deposit.api.domain.PaymentTypeBO;
+import de.adorsys.ledgers.deposit.api.domain.*;
 import de.adorsys.ledgers.deposit.api.exception.PaymentProcessingException;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountConfigService;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountTransactionService;
 import de.adorsys.ledgers.deposit.api.service.mappers.PaymentMapper;
 import de.adorsys.ledgers.deposit.db.domain.Payment;
-import de.adorsys.ledgers.postings.api.domain.LedgerAccountBO;
-import de.adorsys.ledgers.postings.api.domain.LedgerBO;
-import de.adorsys.ledgers.postings.api.domain.PostingBO;
-import de.adorsys.ledgers.postings.api.domain.PostingLineBO;
-import de.adorsys.ledgers.postings.api.domain.PostingStatusBO;
-import de.adorsys.ledgers.postings.api.domain.PostingTypeBO;
-import de.adorsys.ledgers.postings.api.exception.BaseLineException;
-import de.adorsys.ledgers.postings.api.exception.DoubleEntryAccountingException;
-import de.adorsys.ledgers.postings.api.exception.LedgerAccountNotFoundException;
-import de.adorsys.ledgers.postings.api.exception.LedgerNotFoundException;
-import de.adorsys.ledgers.postings.api.exception.PostingNotFoundException;
+import de.adorsys.ledgers.postings.api.domain.*;
+import de.adorsys.ledgers.postings.api.exception.ExceptionCode;
+import de.adorsys.ledgers.postings.api.exception.PostingModuleException;
 import de.adorsys.ledgers.postings.api.service.LedgerService;
 import de.adorsys.ledgers.postings.api.service.PostingService;
 import de.adorsys.ledgers.util.Ids;
+import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DepositAccountTransactionServiceImpl extends AbstractServiceImpl implements DepositAccountTransactionService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DepositAccountServiceImpl.class);
-
-    private final PaymentMapper paymentMapper;
+    private final PaymentMapper paymentMapper = Mappers.getMapper(PaymentMapper.class);
     private final PostingService postingService;
     private final ObjectMapper objectMapper;
 
-    public DepositAccountTransactionServiceImpl(PaymentMapper paymentMapper,
-                                                PostingService postingService, LedgerService ledgerService, DepositAccountConfigService depositAccountConfigService, ObjectMapper objectMapper) {
+    public DepositAccountTransactionServiceImpl(PostingService postingService, LedgerService ledgerService, DepositAccountConfigService depositAccountConfigService, ObjectMapper objectMapper) {
         super(depositAccountConfigService, ledgerService);
-        this.paymentMapper = paymentMapper;
         this.postingService = postingService;
         this.objectMapper = objectMapper;
     }
@@ -157,30 +133,23 @@ public class DepositAccountTransactionServiceImpl extends AbstractServiceImpl im
     }
 
     private LedgerAccountBO getDebtorAccount(LedgerBO ledger, String iban) {
-        try {
-            return ledgerService.findLedgerAccount(ledger, iban);
-        } catch (LedgerNotFoundException | LedgerAccountNotFoundException e) {
-            throw new PaymentProcessingException(e.getMessage(), e);
-        }
+        return ledgerService.findLedgerAccount(ledger, iban);
     }
 
     private LedgerAccountBO getCreditorAccount(LedgerBO ledger, String iban, PaymentProductBO paymentProduct) {
         try {
             return ledgerService.findLedgerAccount(ledger, iban);
-        } catch (LedgerNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new PaymentProcessingException(e.getMessage(), e);
-        } catch (LedgerAccountNotFoundException ex) {
-            return loadClearingAccount(ledger, paymentProduct);
+        } catch (PostingModuleException e) {
+            if (e.getExceptionCode() == ExceptionCode.LEDGER_ACCOUNT_NOT_FOUND) {
+                return loadClearingAccount(ledger, paymentProduct);
+            } else {
+                throw e;
+            }
         }
     }
 
-    private void executeTransactions(PostingBO posting) throws PaymentProcessingException {
-        try {
-            postingService.newPosting(posting);
-        } catch (PostingNotFoundException | LedgerNotFoundException | LedgerAccountNotFoundException | BaseLineException | DoubleEntryAccountingException e) {
-            throw new PaymentProcessingException(e.getMessage());
-        }
+    private void executeTransactions(PostingBO posting) {
+        postingService.newPosting(posting);
     }
 
     private PostingLineBO buildPostingLine(String lineDetails, LedgerAccountBO ledgerAccount, BigDecimal debitAmount, BigDecimal creditAmount, String subOprSrcId, String lineId) {
@@ -209,7 +178,7 @@ public class DepositAccountTransactionServiceImpl extends AbstractServiceImpl im
         return p;
     }
 
-    private <T> String serializeOprDetails(T orderDetails) throws PaymentProcessingException {
+    private <T> String serializeOprDetails(T orderDetails) {
         try {
             return objectMapper.writeValueAsString(orderDetails);
         } catch (JsonProcessingException e) {

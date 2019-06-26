@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.Currency;
 
 @Component
-public class CurrencyMapper {
+public class CurrencyMapper { //TODO DELETE THIS!
     public Currency toCurrency(String currency) {
         return currency == null
                        ? null

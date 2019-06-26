@@ -7,7 +7,7 @@ import java.util.Currency;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class CurrencyMapperTest {
+public class CurrencyMapperTest { //TODO DELETE THIS!
 private CurrencyMapper currencyMapper = new CurrencyMapper();
 
     @Test

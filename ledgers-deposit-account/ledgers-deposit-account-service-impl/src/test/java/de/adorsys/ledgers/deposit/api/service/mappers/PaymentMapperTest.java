@@ -16,9 +16,6 @@ import java.time.LocalDate;
 import java.util.Currency;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 @RunWith(org.mockito.junit.MockitoJUnitRunner.class)
 public class PaymentMapperTest {
@@ -37,7 +34,6 @@ public class PaymentMapperTest {
 
     @Test
     public void toPayment_Single() {
-        when(currencyMapper.toCurrency(anyString())).thenReturn(CURRENCY);
         PaymentBO result = mapper.toPaymentBO(SINGLE_PMT);
         assertThat(result).isNotNull();
         assertThat(result).isEqualToComparingFieldByFieldRecursively(SINGLE_PMT_BO);
@@ -45,7 +41,6 @@ public class PaymentMapperTest {
 
     @Test
     public void toPayment_Bulk() {
-        when(currencyMapper.toCurrency(anyString())).thenReturn(CURRENCY);
         PaymentBO result = mapper.toPaymentBO(BULK_PMT);
         assertThat(result).isNotNull();
         assertThat(result).isEqualToComparingFieldByFieldRecursively(BULK_PMT_BO);
@@ -53,7 +48,6 @@ public class PaymentMapperTest {
 
     @Test
     public void toPaymentBO_Single() {
-        when(currencyMapper.currencyToString(any())).thenReturn(CURRENCY.getCurrencyCode());
         Payment result = mapper.toPayment(SINGLE_PMT_BO);
         assertThat(result).isNotNull();
         assertThat(result).isEqualToComparingFieldByFieldRecursively(SINGLE_PMT);
@@ -61,7 +55,6 @@ public class PaymentMapperTest {
 
     @Test
     public void toPaymentBO_Bulk() {
-        when(currencyMapper.currencyToString(any())).thenReturn(CURRENCY.getCurrencyCode());
         Payment result = mapper.toPayment(BULK_PMT_BO);
         assertThat(result).isNotNull();
         assertThat(result).isEqualToComparingFieldByFieldRecursively(BULK_PMT);
