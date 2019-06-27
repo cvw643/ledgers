@@ -7,7 +7,6 @@ import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import de.adorsys.ledgers.postings.api.domain.*;
-import de.adorsys.ledgers.postings.api.exception.ExceptionCode;
 import de.adorsys.ledgers.postings.api.exception.PostingModuleException;
 import de.adorsys.ledgers.postings.api.service.AccountStmtService;
 import de.adorsys.ledgers.postings.api.service.LedgerService;
@@ -32,6 +31,8 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Month;
+
+import static de.adorsys.ledgers.postings.api.exception.PostingModuleErrorCode.LEDGER_NOT_FOUND;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = PostingsApplication.class)
@@ -68,7 +69,7 @@ public class AccountStmtServiceImplIT {
     }
 
     @Test
-    public void test_load_posting_ok() throws IOException{
+    public void test_load_posting_ok() throws IOException {
         loadCoa("sample_coa_banking.yml");
         loadPosting("sample_posting.yml");
     }
@@ -79,7 +80,7 @@ public class AccountStmtServiceImplIT {
      * @throws IOException
      */
     @Test
-    public void use_case_newbank_no_overriden_tx_nok() throws IOException{
+    public void use_case_newbank_no_overriden_tx_nok() throws IOException {
         loadCoa("sample_coa_banking.yml");
         loadPosting("use_case_newbank_no_overriden_tx.yml");
 
@@ -95,7 +96,7 @@ public class AccountStmtServiceImplIT {
      * @throws IOException
      */
     @Test
-    public void use_case_newbank_no_overriden_tx_ok() throws IOException{
+    public void use_case_newbank_no_overriden_tx_ok() throws IOException {
         loadCoa("sample_coa_banking.yml");
         loadPosting("use_case_newbank_no_overriden_tx.yml");
 
@@ -129,7 +130,7 @@ public class AccountStmtServiceImplIT {
 
 
     @Test
-    public void use_case_newbank_overriden_amount_ok() throws IOException{
+    public void use_case_newbank_overriden_amount_ok() throws IOException {
         loadCoa("sample_coa_banking.yml");
         loadPosting("use_case_newbank_overriden_amount.yml");
 
@@ -250,11 +251,14 @@ public class AccountStmtServiceImplIT {
         }
     }
 
-    public LedgerBO loadLedger(String id)  {
-        return ledgerService.findLedgerById(id).orElseThrow(() -> new PostingModuleException(ExceptionCode.LEDGER_NOT_FOUND,String.format("Ledger with id: %s not found",id)));
+    public LedgerBO loadLedger(String id) {
+        return ledgerService.findLedgerById(id).orElseThrow(() -> PostingModuleException.builder()
+                                                                          .postingModuleErrorCode(LEDGER_NOT_FOUND)
+                                                                          .devMsg(String.format("Ledger with id: %s not found", id))
+                                                                          .build());
     }
 
-    public LedgerAccountBO loadLedgerAccount(LedgerBO ledger, String accountNumber){
+    public LedgerAccountBO loadLedgerAccount(LedgerBO ledger, String accountNumber) {
         return ledgerService.findLedgerAccount(ledger, accountNumber);
     }
 

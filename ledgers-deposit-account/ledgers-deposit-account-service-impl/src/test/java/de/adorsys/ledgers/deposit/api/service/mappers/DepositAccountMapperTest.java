@@ -11,7 +11,6 @@ import de.adorsys.ledgers.deposit.db.domain.DepositAccount;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 import java.util.Currency;
 
@@ -22,8 +21,6 @@ public class DepositAccountMapperTest {
 
     @InjectMocks
     private DepositAccountMapperImpl depositAccountMapper;
-    @Mock
-    private CurrencyMapper currencyMapper;
 
     @Test
     public void toDepositAccountBO() {

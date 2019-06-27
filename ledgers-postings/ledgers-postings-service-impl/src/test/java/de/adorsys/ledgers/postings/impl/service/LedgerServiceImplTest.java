@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,4 +86,31 @@ public class LedgerServiceImplTest {
         assertThat(result.getLedger()).isNotNull();
     }
 
+    @Test
+    public void checkIfLedgerAccountExist() {
+        when(ledgerAccountRepository.findOptionalByLedgerAndName(any(),anyString()))
+                .thenReturn(Optional.of(new LedgerAccount()));
+        when(ledgerRepository.findById(any())).thenReturn(Optional.of(new Ledger()));
+        LedgerBO testLedger = new LedgerBO(null,"id",null,null,null,null,null);
+        boolean result = ledgerService.checkIfLedgerAccountExist(testLedger, "test name");
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void checkIfLedgerAccountExist_account_not_present() {
+        when(ledgerAccountRepository.findOptionalByLedgerAndName(any(),anyString()))
+                .thenReturn(Optional.empty());
+        when(ledgerRepository.findById(any())).thenReturn(Optional.of(new Ledger()));
+        LedgerBO testLedger = new LedgerBO(null,"id",null,null,null,null,null);
+        boolean result = ledgerService.checkIfLedgerAccountExist(testLedger, "test name");
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void checkIfLedgerAccountExist_ledger_not_present() {
+        when(ledgerRepository.findById(any())).thenReturn(Optional.empty());
+        LedgerBO testLedger = new LedgerBO(null,"id",null,null,null,null,null);
+        boolean result = ledgerService.checkIfLedgerAccountExist(testLedger, "test name");
+        assertThat(result).isFalse();
+    }
 }

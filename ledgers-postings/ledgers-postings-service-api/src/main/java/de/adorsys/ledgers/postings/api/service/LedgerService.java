@@ -49,4 +49,12 @@ public interface LedgerService {
      * @return
      */
     LedgerAccountBO findLedgerAccount(LedgerBO ledger, String name);
+
+    /**
+     *
+     * @param ledger ledger
+     * @param name ledger account name
+     * @return boolean representation of presence of requested ledger account
+     */
+    boolean checkIfLedgerAccountExist(LedgerBO ledger, String name);
 }

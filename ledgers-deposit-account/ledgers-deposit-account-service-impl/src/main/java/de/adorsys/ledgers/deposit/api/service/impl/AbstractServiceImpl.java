@@ -23,10 +23,7 @@ public abstract class AbstractServiceImpl {
     }
 
     protected LedgerAccountBO loadClearingAccount(LedgerBO ledgerBO, PaymentProductBO paymentProductBO) {
-        return loadClearing(ledgerBO, depositAccountConfigService.getClearingAccount(paymentProductBO));
-    }
-
-    protected LedgerAccountBO loadClearing(LedgerBO ledgerBO, String accountName) {
-            return ledgerService.findLedgerAccount(ledgerBO, accountName);
+        String clearingAccount = depositAccountConfigService.getClearingAccount(paymentProductBO);
+        return ledgerService.findLedgerAccount(ledgerBO, clearingAccount);
     }
 }

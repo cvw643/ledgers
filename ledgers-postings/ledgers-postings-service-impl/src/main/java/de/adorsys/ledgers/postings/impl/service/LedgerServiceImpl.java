@@ -2,7 +2,7 @@ package de.adorsys.ledgers.postings.impl.service;
 
 import de.adorsys.ledgers.postings.api.domain.LedgerAccountBO;
 import de.adorsys.ledgers.postings.api.domain.LedgerBO;
-import de.adorsys.ledgers.postings.api.exception.ExceptionCode;
+import de.adorsys.ledgers.postings.api.exception.PostingModuleErrorCode;
 import de.adorsys.ledgers.postings.api.exception.PostingModuleException;
 import de.adorsys.ledgers.postings.api.service.LedgerService;
 import de.adorsys.ledgers.postings.db.domain.*;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static de.adorsys.ledgers.postings.api.exception.ExceptionCode.NO_CATEGORY;
+import static de.adorsys.ledgers.postings.api.exception.PostingModuleErrorCode.NO_CATEGORY;
 
 @Service
 public class LedgerServiceImpl extends AbstractServiceImpl implements LedgerService {
@@ -59,7 +59,10 @@ public class LedgerServiceImpl extends AbstractServiceImpl implements LedgerServ
     public LedgerAccountBO newLedgerAccount(LedgerAccountBO ledgerAccount, String userName) {
         // Validations
         if (StringUtils.isBlank(ledgerAccount.getName())) {
-            throw new IllegalArgumentException("Missing model name.");
+            throw PostingModuleException.builder()
+                          .postingModuleErrorCode(PostingModuleErrorCode.NOT_ENOUGH_INFO)
+                          .devMsg("Missing model name.")
+                          .build();
         }
 
         // User
@@ -98,12 +101,27 @@ public class LedgerServiceImpl extends AbstractServiceImpl implements LedgerServ
         return ledgerAccountRepository
                        .findOptionalByLedgerAndName(loadLedger(ledger), name)
                        .map(ledgerAccountMapper::toLedgerAccountBO)
-                       .orElseThrow(() -> new PostingModuleException(ExceptionCode.LEDGER_ACCOUNT_NOT_FOUND, String.format(LA_NF_BY_NAME_MSG, name)));
+                       .orElseThrow(() -> PostingModuleException.builder()
+                                                  .postingModuleErrorCode(PostingModuleErrorCode.LEDGER_ACCOUNT_NOT_FOUND)
+                                                  .devMsg(String.format(LA_NF_BY_NAME_MSG, name))
+                                                  .build());
+    }
+
+    @Override
+    public boolean checkIfLedgerAccountExist(LedgerBO ledgerBO, String name) {
+        try {
+            Ledger ledger = loadLedger(ledgerBO);
+            return ledgerAccountRepository
+                           .findOptionalByLedgerAndName(ledger, name)
+                           .isPresent();
+        } catch (PostingModuleException e) {
+            return false;
+        }
     }
 
     private LedgerAccount getParentAccount(LedgerAccountBO ledgerAccount) {
         return ledgerAccount.getParent() != null
-                       ? loadLedgerAccount(ledgerAccount.getParent())
+                       ? loadLedgerAccountBO(ledgerAccount.getParent())
                        : null;
     }
 
@@ -126,6 +144,9 @@ public class LedgerServiceImpl extends AbstractServiceImpl implements LedgerServ
     }
 
     private PostingModuleException getNoCategoryException(String variable) {
-        return new PostingModuleException(NO_CATEGORY, String.format("Missing category for: %s", variable));
+        return PostingModuleException.builder()
+                       .postingModuleErrorCode(NO_CATEGORY)
+                       .devMsg(String.format("Missing category for: %s", variable))
+                       .build();
     }
 }

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static de.adorsys.ledgers.postings.api.exception.ExceptionCode.LEDGER_ACCOUNT_NOT_FOUND;
+import static de.adorsys.ledgers.postings.api.exception.PostingModuleErrorCode.LEDGER_ACCOUNT_NOT_FOUND;
 
 @Service
 public class DepositAccountInitServiceImpl implements DepositAccountInitService {
@@ -88,7 +88,7 @@ public class DepositAccountInitServiceImpl implements DepositAccountInitService 
             ledgerService.findLedgerAccount(ledger, model.getName());
         } catch (PostingModuleException ex) {
             // NoOp. Create ledger account below.
-            if (ex.getExceptionCode() == LEDGER_ACCOUNT_NOT_FOUND) {
+            if (ex.getPostingModuleErrorCode() == LEDGER_ACCOUNT_NOT_FOUND) {
                 LedgerAccountBO parent = getParentLedgerAccount(ledger, model);
                 LedgerAccountBO la = newLedgerAccountObj(ledger, model, parent);
                 ledgerService.newLedgerAccount(la, SYSTEM);
@@ -124,23 +124,8 @@ public class DepositAccountInitServiceImpl implements DepositAccountInitService 
     private boolean updateRequired(ASPSPConfigData aspspConfigData) {
         return aspspConfigData.getUpdateMarkerAccountNbr() == null ||
                        ledgerService.findLedgerByName(aspspConfigData.getLedger())
-                               .map(l -> checkLedgerAccountAbsent(aspspConfigData.getUpdateMarkerAccountNbr(), l))
+                               .map(l -> !ledgerService.checkIfLedgerAccountExist(l,aspspConfigData.getUpdateMarkerAccountNbr()))
                                .orElse(true);
-    }
-
-    private boolean checkLedgerAccountAbsent(String updateMarkerAccountNbr, LedgerBO ledger) {
-        try {
-            ledgerService.findLedgerAccount(ledger, updateMarkerAccountNbr);
-            // Ledger account present.
-            return false;
-        } catch (PostingModuleException e) {
-            // ledger account non existent.
-            if (e.getExceptionCode() == LEDGER_ACCOUNT_NOT_FOUND) {
-                return true;
-            } else {
-                throw e;
-            }
-        }
     }
 
     private LedgerBO buildLedger(String ledgerName, ChartOfAccountBO coa) {

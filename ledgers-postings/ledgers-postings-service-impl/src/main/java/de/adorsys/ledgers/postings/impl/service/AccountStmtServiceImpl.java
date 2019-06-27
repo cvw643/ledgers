@@ -48,7 +48,7 @@ public class AccountStmtServiceImpl extends AbstractServiceImpl implements Accou
     }
 
     private AccountStmt stmt(LedgerAccountBO ledgerAccount, LocalDateTime refTime) {
-        LedgerAccount account = loadLedgerAccount(ledgerAccount);
+        LedgerAccount account = loadLedgerAccountBO(ledgerAccount);
         AccountStmt accStmt = accountStmtRepository
                                       .findFirstByAccountAndStmtStatusAndPstTimeLessThanOrderByPstTimeDescStmtSeqNbrDesc(account, StmtStatus.CLOSED, refTime)
                                       .orElseGet(() -> newStmtObj(refTime, account));
