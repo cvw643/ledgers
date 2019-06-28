@@ -3,6 +3,7 @@ package de.adorsys.ledgers.middleware.rest.security;
 import de.adorsys.ledgers.middleware.api.domain.um.*;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareAccountManagementService;
 import de.adorsys.ledgers.middleware.api.service.MiddlewarePaymentService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
@@ -118,7 +119,7 @@ public class AccountAccessMethodSecurityExpressionRoot extends SecurityExpressio
     }
 
     private boolean accountInfoByIbanList(List<String> ibanList) {
-        if (ibanList == null || ibanList.isEmpty()) {
+        if (CollectionUtils.isEmpty(ibanList)) {
             return true;
         }
         for (String iban : ibanList) {
