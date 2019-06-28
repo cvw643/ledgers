@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.api.domain;
 
+//TODO unused ENUM to be removed
 public enum StmtTypeBO {
 	/*
 	 * An account balance statement

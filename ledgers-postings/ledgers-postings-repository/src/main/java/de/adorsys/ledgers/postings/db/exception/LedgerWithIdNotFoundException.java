@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.db.exception;
 
+//TODO unused EXCEPTION to be removed
 public class LedgerWithIdNotFoundException extends Exception {
 	private static final long serialVersionUID = -4332509800720032098L;
 	private final String id;

@@ -1,13 +1,19 @@
 package de.adorsys.ledgers.postings.db.domain;
 
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 
+@Getter
+@Setter
 @Entity
+@NoArgsConstructor
 /* The name property of a chart of account must be unique. */
 @Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }, name = "Ledger_name_unique") })
 public class Ledger extends NamedEntity {
@@ -22,16 +28,8 @@ public class Ledger extends NamedEntity {
 		this.coa = coa;
 	}
 
-	public Ledger() {
-	}
-
-	public ChartOfAccount getCoa() {
-		return coa;
-	}
-
 	@Override
 	public String toString() {
 		return "Ledger [coa=" + coa + "] [super: " + super.toString() + "]";
 	}
-	
 }

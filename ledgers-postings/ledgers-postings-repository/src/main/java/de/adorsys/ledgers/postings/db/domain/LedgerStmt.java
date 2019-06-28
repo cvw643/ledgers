@@ -1,12 +1,15 @@
 package de.adorsys.ledgers.postings.db.domain;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Document the state of a ledger at the statement date.
@@ -14,6 +17,9 @@ import javax.persistence.PrePersist;
  * @author fpo
  *
  */
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 public class LedgerStmt extends FinancialStmt {
 
@@ -40,13 +46,5 @@ public class LedgerStmt extends FinancialStmt {
     }	
     public static String makeOperationId(Ledger ledger, LocalDateTime pstTime) {
         return ledger.getId() + "_" +  pstTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-    }	
-	
-	public Ledger getLedger() {
-		return ledger;
-	}
-
-	public void setLedger(Ledger ledger) {
-		this.ledger = ledger;
-	}
+    }
 }

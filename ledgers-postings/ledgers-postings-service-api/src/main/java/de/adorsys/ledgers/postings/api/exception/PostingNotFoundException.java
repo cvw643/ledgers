@@ -2,6 +2,7 @@ package de.adorsys.ledgers.postings.api.exception;
 
 import de.adorsys.ledgers.postings.api.domain.PostingBO;
 
+//TODO unused EXCEPTION to be removed
 public class PostingNotFoundException extends Exception {
 	private static final long serialVersionUID = -1713219984198663520L;
 
