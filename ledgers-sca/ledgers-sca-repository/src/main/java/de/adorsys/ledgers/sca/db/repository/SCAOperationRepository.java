@@ -29,9 +29,5 @@ public interface SCAOperationRepository extends CrudRepository<SCAOperationEntit
 
     List<SCAOperationEntity> findByStatus(AuthCodeStatus status);
 
-    Optional<SCAOperationEntity> findOneByOpIdOrderByCreatedDesc(String opId);
-
-    List<SCAOperationEntity> findByOpIdOrderByCreatedDesc(String opId);
-
     List<SCAOperationEntity> findByOpIdAndOpType(String opId, OpType opType);
 }

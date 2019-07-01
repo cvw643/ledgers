@@ -66,7 +66,6 @@ public class SCAOperationServiceImpl implements SCAOperationService {
     private HashGenerator hashGenerator;
     private Map<ScaMethodTypeBO, SCASender> senders = new HashMap<>();
 
-
     //Use property config instead
 
     @Value("${sca.authCode.validity.seconds:180}")
