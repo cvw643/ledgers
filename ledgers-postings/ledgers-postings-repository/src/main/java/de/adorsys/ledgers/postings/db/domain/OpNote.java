@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.db.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 public class OpNote {
 	

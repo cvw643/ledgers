@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.db.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {

@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.api.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
  * @author fpo
  */
 @NoArgsConstructor
+@EqualsAndHashCode
 public class ChartOfAccountBO extends NamedBO {
     public ChartOfAccountBO(String name, String id, LocalDateTime created, String userDetails, String shortDesc, String longDesc) {
         super(name, id, created, userDetails, shortDesc, longDesc);

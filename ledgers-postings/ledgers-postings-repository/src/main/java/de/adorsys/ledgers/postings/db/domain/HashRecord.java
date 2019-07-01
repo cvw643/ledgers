@@ -18,6 +18,7 @@ package de.adorsys.ledgers.postings.db.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.adorsys.ledgers.util.hash.HashItem;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,6 +27,7 @@ import javax.persistence.MappedSuperclass;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @MappedSuperclass
 public abstract class HashRecord  implements HashItem<HashRecord> {

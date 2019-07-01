@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.db.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @Entity
 @Table(uniqueConstraints = {

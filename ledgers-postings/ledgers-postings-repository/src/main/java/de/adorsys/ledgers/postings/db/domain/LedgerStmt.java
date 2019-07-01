@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.db.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import java.util.Optional;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @Entity
 public class LedgerStmt extends FinancialStmt {

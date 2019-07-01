@@ -1,5 +1,6 @@
 package de.adorsys.ledgers.postings.db.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 @MappedSuperclass
 public abstract class NamedEntity extends BaseEntity {
 	

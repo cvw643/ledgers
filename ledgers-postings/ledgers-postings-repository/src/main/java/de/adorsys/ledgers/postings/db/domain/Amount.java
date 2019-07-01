@@ -16,6 +16,7 @@
 
 package de.adorsys.ledgers.postings.db.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @Embeddable
 public class Amount {

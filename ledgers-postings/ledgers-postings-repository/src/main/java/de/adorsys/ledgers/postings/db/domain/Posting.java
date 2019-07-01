@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import de.adorsys.ledgers.postings.db.utils.RecordHashHelper;
 import de.adorsys.ledgers.util.hash.HashGenerationException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.LocalDateTimeConverter;
@@ -28,6 +29,7 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
+@EqualsAndHashCode
 @JsonPropertyOrder(alphabetic = true)
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"opr_id", "discarding_id"}, name = "Posting_opr_id_discarding_id_unique")})
