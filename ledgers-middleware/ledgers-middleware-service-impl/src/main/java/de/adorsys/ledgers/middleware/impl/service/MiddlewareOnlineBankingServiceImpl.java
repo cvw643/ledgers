@@ -157,11 +157,11 @@ public class MiddlewareOnlineBankingServiceImpl implements MiddlewareOnlineBanki
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    public SCALoginResponseTO generateLoginAuthCode(String scaUserDataId, String authorisationId, String userMessage,
+    public SCALoginResponseTO generateLoginAuthCode(String userId, String scaUserDataId, String authorisationId, String userMessage,
                                                     int validitySeconds) throws SCAOperationNotFoundMiddlewareException, InsufficientPermissionMiddlewareException,
                                                                                         SCAMethodNotSupportedMiddleException, UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException {
         try {
-            UserBO user = scaUtils.userBO();
+            UserBO user = scaUtils.userBO(userId);
             SCAOperationBO scaOperationBO = scaOperationService.loadAuthCode(authorisationId);
             LoginKeyDataTO keyData = LoginKeyDataTO.fromOpId(scaOperationBO.getOpId());
             String opId = scaOperationBO.getOpId();
@@ -193,12 +193,12 @@ public class MiddlewareOnlineBankingServiceImpl implements MiddlewareOnlineBanki
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    public SCALoginResponseTO authenticateForLogin(String authorisationId, String authCode)
+    public SCALoginResponseTO authenticateForLogin(String userId, String authorisationId, String authCode)
             throws SCAOperationNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
                            SCAOperationExpiredMiddlewareException, SCAOperationUsedOrStolenMiddlewareException,
                            InsufficientPermissionMiddlewareException {
         try {
-            UserBO user = scaUtils.userBO();
+            UserBO user = scaUtils.userBO(userId);
             SCAOperationBO scaOperationBO = scaOperationService.loadAuthCode(authorisationId);
             LoginKeyDataTO keyData = LoginKeyDataTO.fromOpId(scaOperationBO.getOpId());
             boolean valid = scaOperationService.validateAuthCode(authorisationId, authorisationId, authorisationId, authCode, 0);

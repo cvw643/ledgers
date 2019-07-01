@@ -120,9 +120,9 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
     }
 
     @Override
-    public SCAPaymentResponseTO initiatePaymentCancellation(String paymentId)
+    public SCAPaymentResponseTO initiatePaymentCancellation(String userId, String paymentId)
             throws PaymentNotFoundMiddlewareException, PaymentProcessingMiddlewareException {
-        UserBO userBO = scaUtils.userBO();
+        UserBO userBO = scaUtils.userBO(userId);
         PaymentBO paymentBO = loadPayment(paymentId);
         TransactionStatusTO originalTxStatus = TransactionStatusTO.valueOf(paymentBO.getTransactionStatus().name());
         cancelPolicy.onCancel(paymentId, originalTxStatus);
@@ -146,10 +146,10 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> SCAPaymentResponseTO initiatePayment(T payment, PaymentTypeTO paymentType)
+    public <T> SCAPaymentResponseTO initiatePayment(String userId, T payment, PaymentTypeTO paymentType)
             throws AccountNotFoundMiddlewareException, PaymentWithIdMiddlewareException {
         PaymentBO paymentBO = paymentConverter.toPaymentBO(payment, paymentType.getPaymentClass());
-        UserBO userBO = scaUtils.userBO();
+        UserBO userBO = scaUtils.userBO(userId);
         checkDepositAccount(paymentBO);
 
         TransactionStatusBO status = scaUtils.hasSCA(userBO)
@@ -234,7 +234,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
      *
      */
     @Override
-    public SCAPaymentResponseTO authorizePayment(String paymentId, String authorisationId, String authCode)
+    public SCAPaymentResponseTO authorizePayment(String userId, String paymentId, String authorisationId, String authCode)
             throws SCAOperationNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
                            SCAOperationExpiredMiddlewareException, SCAOperationUsedOrStolenMiddlewareException,
                            PaymentNotFoundMiddlewareException {
@@ -243,7 +243,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
         PaymentCoreDataTO paymentKeyData = coreDataPolicy.getPaymentCoreData(payment);
         TransactionStatusBO tx = payment.getTransactionStatus();
         try {
-            validateAuthCode(payment, authorisationId, authCode, paymentKeyData.template());
+            validateAuthCode(userId, payment, authorisationId, authCode, paymentKeyData.template());
             boolean authCompleted = scaOperationService.authenticationCompleted(paymentId, OpTypeBO.PAYMENT);
             if (authCompleted) {
                 tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.ACTC);
@@ -252,7 +252,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
                 tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.PATC);
             }
             BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
-            return toScaPaymentResponse(scaUtils.user(), paymentId, tx, paymentKeyData, scaUtils.loadAuthCode(authorisationId), bearerToken);
+            return toScaPaymentResponse(scaUtils.user(userId), paymentId, tx, paymentKeyData, scaUtils.loadAuthCode(authorisationId), bearerToken);
         } catch (PaymentNotFoundException e) {
             logger.error(e.getMessage());
             throw new AccountMiddlewareUncheckedException(e.getMessage(), e);
@@ -282,7 +282,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
     }
 
     @Override
-    public SCAPaymentResponseTO loadSCAForPaymentData(String paymentId, String authorisationId)
+    public SCAPaymentResponseTO loadSCAForPaymentData(String userId, String paymentId, String authorisationId)
             throws PaymentNotFoundMiddlewareException, SCAOperationExpiredMiddlewareException {
         SCAOperationBO a;
         try {
@@ -293,16 +293,16 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
         PaymentBO payment = loadPayment(paymentId);
         PaymentCoreDataTO paymentKeyData = coreDataPolicy.getPaymentCoreData(payment);
         BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
-        return toScaPaymentResponse(scaUtils.user(), paymentId, payment.getTransactionStatus(), paymentKeyData, a, bearerToken);
+        return toScaPaymentResponse(scaUtils.user(userId), paymentId, payment.getTransactionStatus(), paymentKeyData, a, bearerToken);
     }
 
     @Override
-    public SCAPaymentResponseTO selectSCAMethodForPayment(String paymentId, String authorisationId, String scaMethodId)
+    public SCAPaymentResponseTO selectSCAMethodForPayment(String userId, String paymentId, String authorisationId, String scaMethodId)
             throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException,
                            UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
                            SCAOperationNotFoundMiddlewareException {
 
-        UserBO userBO = scaUtils.userBO();
+        UserBO userBO = scaUtils.userBO(userId);
         UserTO userTO = scaUtils.user(userBO);
         PaymentBO payment = loadPayment(paymentId);
         try {
@@ -331,7 +331,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
     }
 
     @Override
-    public SCAPaymentResponseTO loadSCAForCancelPaymentData(String paymentId, String cancellationId)
+    public SCAPaymentResponseTO loadSCAForCancelPaymentData(String userId, String paymentId, String cancellationId)
             throws PaymentNotFoundMiddlewareException, SCAOperationExpiredMiddlewareException {
         SCAOperationBO a;
         try {
@@ -339,7 +339,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
         } catch (SCAOperationNotFoundException e) {
             throw new SCAOperationExpiredMiddlewareException(e.getMessage(), e);
         }
-        UserTO user = scaUtils.user();
+        UserTO user = scaUtils.user(userId);
         PaymentBO payment = loadPayment(paymentId);
         PaymentCoreDataTO paymentKeyData = coreDataPolicy.getCancelPaymentCoreData(payment);
         BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
@@ -347,13 +347,13 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
     }
 
     @Override
-    public SCAPaymentResponseTO selectSCAMethodForCancelPayment(String paymentId, String cancellationId,
+    public SCAPaymentResponseTO selectSCAMethodForCancelPayment(String userId, String paymentId, String cancellationId,
                                                                 String scaMethodId)
             throws PaymentNotFoundMiddlewareException, SCAMethodNotSupportedMiddleException,
                            UserScaDataNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
                            SCAOperationNotFoundMiddlewareException {
         try {
-            UserBO userBO = scaUtils.userBO();
+            UserBO userBO = scaUtils.userBO(userId);
             UserTO userTO = scaUtils.user(userBO);
             PaymentBO payment = loadPayment(paymentId);
             int scaWeight = accessService.resolveScaWeightByDebtorAccount(userBO.getAccountAccesses(), payment.getDebtorAccount().getIban());
@@ -384,13 +384,13 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
     }
 
     @Override
-    public SCAPaymentResponseTO authorizeCancelPayment(String paymentId, String cancellationId, String authCode)
+    public SCAPaymentResponseTO authorizeCancelPayment(String userId, String paymentId, String cancellationId, String authCode)
             throws SCAOperationNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
                            SCAOperationExpiredMiddlewareException, SCAOperationUsedOrStolenMiddlewareException, PaymentNotFoundMiddlewareException {
         PaymentBO payment = loadPayment(paymentId);
         PaymentCoreDataTO paymentKeyData = coreDataPolicy.getCancelPaymentCoreData(payment);
         try {
-            validateAuthCode(payment, cancellationId, authCode, paymentKeyData.template());
+            validateAuthCode(userId, payment, cancellationId, authCode, paymentKeyData.template());
             TransactionStatusBO tx = payment.getTransactionStatus();
             if (scaOperationService.authenticationCompleted(paymentId, OpTypeBO.CANCEL_PAYMENT)) {
                 tx = paymentService.cancelPayment(paymentId);
@@ -398,7 +398,7 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
                 tx = paymentService.updatePaymentStatus(paymentId, TransactionStatusBO.PATC);
             }
             BearerTokenTO bearerToken = paymentAccountAccessToken(payment);
-            return toScaPaymentResponse(scaUtils.user(), paymentId, tx,
+            return toScaPaymentResponse(scaUtils.user(userId), paymentId, tx,
                     paymentKeyData, scaUtils.loadAuthCode(cancellationId), bearerToken);
         } catch (PaymentNotFoundException e) {
             logger.error(e.getMessage());
@@ -407,11 +407,11 @@ public class MiddlewarePaymentServiceImpl implements MiddlewarePaymentService {
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")
-    private void validateAuthCode(PaymentBO payment, String authorisationId, String authCode, String template)
+    private void validateAuthCode(String userId, PaymentBO payment, String authorisationId, String authCode, String template)
             throws SCAOperationNotFoundMiddlewareException, SCAOperationValidationMiddlewareException,
                            SCAOperationUsedOrStolenMiddlewareException, SCAOperationExpiredMiddlewareException {
         try {
-            UserBO userBO = scaUtils.userBO();
+            UserBO userBO = scaUtils.userBO(userId);
             int scaWeight = accessService.resolveScaWeightByDebtorAccount(userBO.getAccountAccesses(), payment.getDebtorAccount().getIban());
             if (!scaOperationService.validateAuthCode(authorisationId, payment.getPaymentId(), template, authCode, scaWeight)) {
                 throw new SCAOperationValidationMiddlewareException("Wrong auth code");
