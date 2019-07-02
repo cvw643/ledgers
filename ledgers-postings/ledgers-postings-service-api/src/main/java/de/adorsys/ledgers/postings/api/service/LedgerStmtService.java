@@ -5,7 +5,7 @@ import de.adorsys.ledgers.postings.api.domain.LedgerStmtBO;
 
 import java.time.LocalDateTime;
 
-//TODO unused INTERFACE to be removed
+//TODO unused INTERFACE to be removed https://git.adorsys.de/adorsys/xs2a/psd2-dynamic-sandbox/issues/195
 public interface LedgerStmtService {
 	/**
 	 * Read a balance statement. Eventually compute one without storing. 
