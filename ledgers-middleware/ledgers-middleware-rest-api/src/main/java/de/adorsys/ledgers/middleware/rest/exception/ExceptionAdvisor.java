@@ -57,8 +57,9 @@ public class ExceptionAdvisor {
 
     @ExceptionHandler(PostingModuleException.class)
     public ResponseEntity<Map> handlePostingModuleException(PostingModuleException ex) {
-        Map<String, String> body = getHandlerContent(PostingModuleExceptionResolver.getHttpStatus(ex), null, ex.getDevMsg());
-        return new ResponseEntity<>(body, PostingModuleExceptionResolver.getHttpStatus(ex));
+        HttpStatus status = PostingHttpStatusResolver.resolveHttpStatusByCode(ex.getErrorCode());
+        Map<String, String> body = getHandlerContent(status, null, ex.getDevMsg());
+        return new ResponseEntity<>(body, status);
     }
 
     //TODO Consider a separate Class for this with a builder?

@@ -1,6 +1,6 @@
 package de.adorsys.ledgers.middleware.rest.exception;
 
-import de.adorsys.ledgers.postings.api.exception.PostingModuleErrorCode;
+import de.adorsys.ledgers.postings.api.exception.PostingErrorCode;
 import de.adorsys.ledgers.postings.api.exception.PostingModuleException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ public class ExceptionAdvisorTest {
     @Test
     public void handlePostingModuleException() {
         PostingModuleException exception = PostingModuleException.builder()
-                                                   .postingModuleErrorCode(PostingModuleErrorCode.LEDGER_NOT_FOUND)
+                                                   .errorCode(PostingErrorCode.LEDGER_NOT_FOUND)
                                                    .devMsg(DEV_ERROR_MSG)
                                                    .build();
         ResponseEntity<Map> result = advisor.handlePostingModuleException(exception);
