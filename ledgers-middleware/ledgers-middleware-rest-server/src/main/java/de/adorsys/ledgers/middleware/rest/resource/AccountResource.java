@@ -73,7 +73,7 @@ public class AccountResource implements AccountRestAPI {
         String accountNumberSuffix = StringUtils.substringAfter(iban, accountNumberPrefix);
 
         try {
-            middlewareAccountService.createDepositAccount(accountNumberPrefix, accountNumberSuffix, accountDetailsTO);
+            middlewareAccountService.createDepositAccount(authenticationFacade.getScaInfo(), accountNumberPrefix, accountNumberSuffix, accountDetailsTO);
             // TODO: return 201 and link to account.
             return ResponseEntity.ok().build();
         } catch (AccountWithPrefixGoneMiddlewareException | AccountWithSuffixExistsMiddlewareException | UserNotFoundMiddlewareException | AccountNotFoundMiddlewareException e) {
@@ -166,7 +166,7 @@ public class AccountResource implements AccountRestAPI {
     @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<Void> depositCash(String accountId, AmountTO amount) {
         try {
-            middlewareAccountService.depositCash(accountId, amount);
+            middlewareAccountService.depositCash(authenticationFacade.getScaInfo(), accountId, amount);
             return ResponseEntity.accepted().build();
         } catch (AccountNotFoundMiddlewareException e) {
             throw notFoundRestException(e);

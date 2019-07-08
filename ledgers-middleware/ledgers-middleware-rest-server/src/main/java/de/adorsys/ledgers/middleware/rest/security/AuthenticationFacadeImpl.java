@@ -46,6 +46,7 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
         info.setAuthorisationId(accessTokenTO.getAuthorisationId());
         info.setScaId(accessTokenTO.getScaId());
         info.setUserRole(accessTokenTO.getRole());
+        info.setUserLogin(accessTokenTO.getLogin());
         return info;
     }
 

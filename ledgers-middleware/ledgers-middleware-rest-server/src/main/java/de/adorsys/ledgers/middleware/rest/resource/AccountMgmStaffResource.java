@@ -47,7 +47,7 @@ public class AccountMgmStaffResource implements AccountMgmStaffResourceAPI {
     @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<Void> createDepositAccountForUser(String userID, AccountDetailsTO accountDetailsTO) {
         try {
-            middlewareAccountService.createDepositAccount(userID, accountDetailsTO);
+            middlewareAccountService.createDepositAccount(authenticationFacade.getScaInfo(), accountDetailsTO);
 
             // TODO: change to created after Account Middleware service refactoring
             return ResponseEntity.ok().build();
@@ -83,7 +83,7 @@ public class AccountMgmStaffResource implements AccountMgmStaffResourceAPI {
     @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<Void> depositCash(String accountId, AmountTO amount) {
         try {
-            middlewareAccountService.depositCash(accountId, amount);
+            middlewareAccountService.depositCash(authenticationFacade.getScaInfo(), accountId, amount);
             return ResponseEntity.accepted().build();
         } catch (AccountNotFoundMiddlewareException e) {
             log.error(e.getMessage(), e);
