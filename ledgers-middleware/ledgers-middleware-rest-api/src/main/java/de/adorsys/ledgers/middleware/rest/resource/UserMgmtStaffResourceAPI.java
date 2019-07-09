@@ -128,7 +128,7 @@ public interface UserMgmtStaffResourceAPI {
      * @return nothing
      */
     @ApiOperation(value = "Grants/Updates Account Access for user.",
-            notes = "rants/Updates Account Access for user.",
+            notes = "Grants/Updates Account Access for user.",
             authorizations = @Authorization(value = "apiKey"))
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success. Account Access Successfully updated."),
