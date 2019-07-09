@@ -1,6 +1,7 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
+import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import de.adorsys.ledgers.um.api.domain.AccessTypeBO;
 import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
 import de.adorsys.ledgers.um.api.domain.AisAccountAccessInfoBO;
@@ -26,8 +27,15 @@ public class AccessService {
     public void updateAccountAccess(UserBO user, AccountAccessBO access) {
         if (!containsAccess(user.getAccountAccesses(), access.getIban())) {
             user.getAccountAccesses().add(access);
+        } else {
+            user.getAccountAccesses().forEach(a -> {
+                if (a.getIban().equals(access.getIban())) {
+                    a.setAccessType(access.getAccessType());
+                    a.setScaWeight(access.getScaWeight());
+                }
+            });
         }
-        userService.updateAccountAccess(user.getLogin(),user.getAccountAccesses());
+        userService.updateAccountAccess(user.getLogin(), user.getAccountAccesses());
     }
 
     private boolean containsAccess(List<AccountAccessBO> accesses, String iban) {
@@ -64,7 +72,7 @@ public class AccessService {
 
     /**
      * Calculates sca weight using debtor iban and users account accesses for payment
-    */
+     */
     public int resolveScaWeightByDebtorAccount(List<AccountAccessBO> accountAccesses, String debtorAccount) {
         return accountAccesses.stream()
                        .filter(ac -> StringUtils.equalsIgnoreCase(ac.getIban(), debtorAccount))
@@ -86,5 +94,10 @@ public class AccessService {
                        .min(Comparator.comparing(AccountAccessBO::getScaWeight))
                        .map(AccountAccessBO::getScaWeight)
                        .orElse(0);
+    }
+
+    public boolean userHasAccessToAccount(UserTO user, String iban) {
+        return user.getAccountAccesses().stream()
+                       .anyMatch(a -> a.getIban().equals(iban));
     }
 }

@@ -1,11 +1,13 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
-import de.adorsys.ledgers.deposit.api.exception.DepositAccountNotFoundException;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountService;
+import de.adorsys.ledgers.middleware.api.domain.sca.ScaInfoTO;
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
 import de.adorsys.ledgers.middleware.api.domain.um.ScaUserDataTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
+import de.adorsys.ledgers.middleware.api.exception.InsufficientPermissionMiddlewareException;
+import de.adorsys.ledgers.middleware.api.exception.UserAlreadyExistsMiddlewareException;
 import de.adorsys.ledgers.middleware.api.exception.UserNotFoundMiddlewareException;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareUserManagementService;
 import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
@@ -27,6 +29,7 @@ import java.util.List;
 public class MiddlewareUserManagementServiceImpl implements MiddlewareUserManagementService {
     private final UserService userService;
     private final DepositAccountService depositAccountService;
+    private final AccessService accessService;
     private final UserMapper userTOMapper = Mappers.getMapper(UserMapper.class);
 
     @Override
@@ -52,19 +55,20 @@ public class MiddlewareUserManagementServiceImpl implements MiddlewareUserManage
     }
 
     @Override
-    public UserTO updateAccountAccess(String userLogin, List<AccountAccessTO> accounts) throws UserNotFoundMiddlewareException {
-        try {
-            // check if accounts exist in ledgers deposit account
-            for (AccountAccessTO account : accounts) {
-                depositAccountService.getDepositAccountByIban(account.getIban(), LocalDateTime.now(), false);
-            }
-
-            UserBO userBO = userService.updateAccountAccess(userLogin, userTOMapper.toAccountAccessListBO(accounts));
-            return userTOMapper.toUserTO(userBO);
-        } catch (DepositAccountNotFoundException e) {
-            log.error(e.getMessage());
-            throw new UserNotFoundMiddlewareException(e.getMessage(), e);
+    public void updateAccountAccess(ScaInfoTO scaInfo, String userId, AccountAccessTO access) {
+        depositAccountService.getDepositAccountByIban(access.getIban(), LocalDateTime.now(), false);
+        UserTO branch = findById(scaInfo.getUserId());
+        boolean tppHasAccessToAccount = accessService.userHasAccessToAccount(branch, access.getIban());
+        if (!tppHasAccessToAccount) {
+            log.error("Branch: {} has no access to account: {}", branch.getLogin(), access.getIban());
+            throw new InsufficientPermissionMiddlewareException(String.format("Current Branch does have no access to the requested account: %s", access.getIban()));
         }
+        UserTO user = findById(userId);
+        if (!branch.getLogin().equals(user.getBranch())) {
+            log.error("User id: {} with Branch: {} is not from branch: {}", user.getId(),user.getBranch(), branch.getLogin());
+            throw new InsufficientPermissionMiddlewareException(String.format("Requested user: %s is not a part of the branch: %s", user.getLogin(), scaInfo.getUserLogin()));
+        }
+        accessService.updateAccountAccess(userTOMapper.toUserBO(user), userTOMapper.toAccountAccessBO(access));
     }
 
     @Override
