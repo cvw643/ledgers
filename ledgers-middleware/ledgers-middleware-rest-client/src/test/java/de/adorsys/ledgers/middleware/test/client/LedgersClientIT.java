@@ -57,7 +57,7 @@ public class LedgersClientIT {
     private static final String PIN = "12345";
     private static final String BANK_CODE = "76070024";
 
-    private static UserTO BRANCH = getUser(BRANCH_LOGIN, UserRoleTO.STAFF);
+    private static final UserTO BRANCH = getUser(BRANCH_LOGIN, UserRoleTO.STAFF);
     private static UserTO USER_1 = getUser("1", CUSTOMER);
     private static UserTO USER_2 = getUser("2", CUSTOMER);
     private static AccountDetailsTO ACCOUNT_1 = getAccountDetails(USER_1.getLogin());
@@ -102,7 +102,7 @@ public class LedgersClientIT {
     public void c_createBranch() {
         ResponseEntity<UserTO> responseBranchCreation = userMgmtStaffRestClient.register(BRANCH_LOGIN, BRANCH);
         assertThat(responseBranchCreation.getStatusCode()).isEqualTo(OK);
-        BRANCH = responseBranchCreation.getBody();
+        assertThat(responseBranchCreation.getBody().getId()).isNotBlank();
     }
 
     @Test

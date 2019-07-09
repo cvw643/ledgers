@@ -53,7 +53,7 @@ public class ExceptionAdvisor {
     }
 
     @ExceptionHandler(DepositAccountNotFoundException.class)
-    public ResponseEntity handleRuntimeException(DepositAccountNotFoundException e) {
+    public ResponseEntity handleDepositAccountNotFoundException(DepositAccountNotFoundException e) {
         Map<String, String> body = getHandlerContent(HttpStatus.NOT_FOUND, null, e.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
