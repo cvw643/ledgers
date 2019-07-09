@@ -1,12 +1,10 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
-import de.adorsys.ledgers.deposit.api.exception.DepositAccountUncheckedException;
 import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
 import de.adorsys.ledgers.um.api.domain.AccessTypeBO;
 import de.adorsys.ledgers.um.api.domain.AccountAccessBO;
 import de.adorsys.ledgers.um.api.domain.AisAccountAccessInfoBO;
 import de.adorsys.ledgers.um.api.domain.UserBO;
-import de.adorsys.ledgers.um.api.exception.UserNotFoundException;
 import de.adorsys.ledgers.um.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +23,7 @@ public class AccessService {
 
     private final UserService userService;
 
-    public void updateAccountAccess(UserBO user, AccountAccessBO access) throws UserNotFoundException {
+    public void updateAccountAccess(UserBO user, AccountAccessBO access) {
         if (!containsAccess(user.getAccountAccesses(), access.getIban())) {
             user.getAccountAccesses().add(access);
         }
@@ -39,13 +37,7 @@ public class AccessService {
 
     public UserBO loadCurrentUser(String userId) {
         // Load owner
-        UserBO userBo;
-        try {
-            userBo = userService.findById(userId);
-        } catch (UserNotFoundException e) {
-            throw new DepositAccountUncheckedException(String.format(ERROR_MESSAGE_USER_NF, userId), e);
-        }
-        return userBo;
+        return userService.findById(userId);
     }
 
     public List<String> filterOwnedAccounts(List<AccountAccessTO> accountAccesses) {
@@ -54,7 +46,7 @@ public class AccessService {
         return accountAccesses == null
                        ? Collections.emptyList()
                        : accountAccesses.stream()
-                                 .filter(a -> a.getAccessType() != null && AccessTypeBO.OWNER.name().equals(a.getAccessType().name()))
+                                 .filter(a -> AccessTypeBO.OWNER.name().equals(a.getAccessType().name()))
                                  .map(AccountAccessTO::getIban)
                                  .collect(Collectors.toList());
     }
