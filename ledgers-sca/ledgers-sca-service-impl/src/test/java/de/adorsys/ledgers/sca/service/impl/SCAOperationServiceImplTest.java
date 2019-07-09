@@ -185,7 +185,7 @@ public class SCAOperationServiceImplTest {
     }
 
     @Test(expected = ScaModuleException.class)
-    public void generateUserScaDataNotFoundException() throws SCAMethodNotSupportedException, SCAOperationValidationException {
+    public void scaDataNotFound() throws SCAMethodNotSupportedException, SCAOperationValidationException {
         String email = "spe@adorsys.com.ua";
 
         ScaUserDataBO method = new ScaUserDataBO(ScaMethodTypeBO.EMAIL, email);

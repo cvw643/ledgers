@@ -368,7 +368,7 @@ public class UserServiceImpl implements UserService {
                     log.warn(message);
                     return UserManagementModuleException.builder()
                                    .errorCode(INSUFFICIENT_PERMISSION)
-                                   .devMsg((message))
+                                   .devMsg(message)
                                    .build();
                 });
     }
