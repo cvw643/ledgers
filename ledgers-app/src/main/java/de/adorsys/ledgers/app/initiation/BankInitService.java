@@ -80,7 +80,7 @@ public class BankInitService {
         try {
             userService.findByLogin("admin");
             logger.error("Admin user is already present. Skipping creation");
-        } catch (UserManagementModuleException e) {
+        } catch (UserManagementModuleException e) { //TODO GET RID of Exception Driven Logic https://git.adorsys.de/adorsys/xs2a/psd2-dynamic-sandbox/issues/211
             UserTO admin = new UserTO("admin", "admin@mail.de", "admin123"); //TODO Matter of refactoring
             admin.setUserRoles(Collections.singleton(UserRoleTO.SYSTEM));
             createUser(admin);
@@ -131,7 +131,7 @@ public class BankInitService {
         }
     }
 
-    private boolean isAbsentTransactionBatch(BulkPaymentTO payment) throws DepositAccountNotFoundException {
+    private boolean isAbsentTransactionBatch(BulkPaymentTO payment) {
         boolean isAbsentTransaction;
         DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(payment.getDebtorAccount().getIban(), LocalDateTime.now(), false);
         List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), START_DATE, LocalDateTime.now());
@@ -143,18 +143,18 @@ public class BankInitService {
         return isAbsentTransaction;
     }
 
-    private boolean isAbsentTransactionRegular(String iban, String entToEndId) throws DepositAccountNotFoundException {
+    private boolean isAbsentTransactionRegular(String iban, String entToEndId) {
         DepositAccountDetailsBO account = depositAccountService.getDepositAccountByIban(iban, LocalDateTime.now(), false);
         List<TransactionDetailsBO> transactions = depositAccountService.getTransactionsByDates(account.getAccount().getId(), START_DATE, LocalDateTime.now());
         return transactions.stream()
                        .noneMatch(t -> entToEndId.equals(t.getEndToEndId()));
     }
 
-    private UserTO getUserByIban(List<UserTO> users, String iban){
+    private UserTO getUserByIban(List<UserTO> users, String iban) {
         return users.stream()
                        .filter(user -> isAccountContainedInAccess(user.getAccountAccesses(), iban))
                        .findFirst()
-                       .orElseThrow(()->UserManagementModuleException.builder().build());
+                       .orElseThrow(() -> UserManagementModuleException.builder().build());
     }
 
     private void createAccounts() {
@@ -205,7 +205,7 @@ public class BankInitService {
                        .filter(u -> isAccountContainedInAccess(u.getAccountAccesses(), iban))
                        .findFirst()
                        .map(UserTO::getLogin)
-                       .orElseThrow(()->UserManagementModuleException.builder().build());
+                       .orElseThrow(() -> UserManagementModuleException.builder().build());
     }
 
     private boolean isAccountContainedInAccess(List<AccountAccessTO> access, String iban) {
