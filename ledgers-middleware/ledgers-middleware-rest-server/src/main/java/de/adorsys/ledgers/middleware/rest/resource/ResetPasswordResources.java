@@ -1,8 +1,8 @@
 package de.adorsys.ledgers.middleware.rest.resource;
 
-import de.adorsys.ledgers.core.ResetPassword;
-import de.adorsys.ledgers.core.SendCode;
-import de.adorsys.ledgers.core.UpdatePassword;
+import de.adorsys.ledgers.security.ResetPassword;
+import de.adorsys.ledgers.security.SendCode;
+import de.adorsys.ledgers.security.UpdatePassword;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareResetPasswordService;
 import de.adorsys.ledgers.middleware.rest.annotation.MiddlewareUserResource;
 import lombok.RequiredArgsConstructor;

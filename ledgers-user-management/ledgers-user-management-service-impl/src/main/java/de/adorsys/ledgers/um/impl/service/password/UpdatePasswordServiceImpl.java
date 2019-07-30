@@ -1,6 +1,6 @@
 package de.adorsys.ledgers.um.impl.service.password;
 
-import de.adorsys.ledgers.core.UpdatePassword;
+import de.adorsys.ledgers.security.UpdatePassword;
 import de.adorsys.ledgers.um.api.exception.UserManagementModuleException;
 import de.adorsys.ledgers.um.api.service.UpdatePasswordService;
 import de.adorsys.ledgers.um.db.domain.UserEntity;

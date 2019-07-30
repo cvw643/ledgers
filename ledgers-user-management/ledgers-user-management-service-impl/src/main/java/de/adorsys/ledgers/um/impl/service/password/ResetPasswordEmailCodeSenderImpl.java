@@ -1,7 +1,7 @@
 package de.adorsys.ledgers.um.impl.service.password;
 
-import de.adorsys.ledgers.core.ResetPassword;
-import de.adorsys.ledgers.core.SendCode;
+import de.adorsys.ledgers.security.ResetPassword;
+import de.adorsys.ledgers.security.SendCode;
 import de.adorsys.ledgers.um.api.exception.UserManagementModuleException;
 import de.adorsys.ledgers.um.api.service.ResetPasswordCodeSender;
 import lombok.RequiredArgsConstructor;

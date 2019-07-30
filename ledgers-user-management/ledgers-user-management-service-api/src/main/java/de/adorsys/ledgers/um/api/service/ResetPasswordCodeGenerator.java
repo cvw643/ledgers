@@ -1,7 +1,7 @@
 package de.adorsys.ledgers.um.api.service;
 
-import de.adorsys.ledgers.core.GenerateCode;
-import de.adorsys.ledgers.core.ResetPassword;
+import de.adorsys.ledgers.security.GenerateCode;
+import de.adorsys.ledgers.security.ResetPassword;
 
 public interface ResetPasswordCodeGenerator {
     GenerateCode generateCode(ResetPassword source);

@@ -1,7 +1,7 @@
 package de.adorsys.ledgers.middleware.impl.service;
 
-import de.adorsys.ledgers.core.*;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareResetPasswordService;
+import de.adorsys.ledgers.security.*;
 import de.adorsys.ledgers.um.api.service.ResetPasswordCodeGenerator;
 import de.adorsys.ledgers.um.api.service.ResetPasswordCodeSender;
 import de.adorsys.ledgers.um.api.service.ResetPasswordCodeVerifier;

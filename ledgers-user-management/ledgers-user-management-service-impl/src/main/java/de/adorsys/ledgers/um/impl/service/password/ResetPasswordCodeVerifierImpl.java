@@ -1,6 +1,6 @@
 package de.adorsys.ledgers.um.impl.service.password;
 
-import de.adorsys.ledgers.core.VerifyCode;
+import de.adorsys.ledgers.security.VerifyCode;
 import de.adorsys.ledgers.um.api.exception.UserManagementModuleException;
 import de.adorsys.ledgers.um.api.service.ResetPasswordCodeVerifier;
 import de.adorsys.ledgers.um.db.domain.ResetPasswordEntity;

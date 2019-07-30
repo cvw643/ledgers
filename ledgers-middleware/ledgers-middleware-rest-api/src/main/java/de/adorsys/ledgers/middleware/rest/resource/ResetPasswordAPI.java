@@ -1,8 +1,8 @@
 package de.adorsys.ledgers.middleware.rest.resource;
 
-import de.adorsys.ledgers.core.ResetPassword;
-import de.adorsys.ledgers.core.SendCode;
-import de.adorsys.ledgers.core.UpdatePassword;
+import de.adorsys.ledgers.security.ResetPassword;
+import de.adorsys.ledgers.security.SendCode;
+import de.adorsys.ledgers.security.UpdatePassword;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;

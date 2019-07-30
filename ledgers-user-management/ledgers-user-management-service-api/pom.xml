@@ -21,7 +21,7 @@
 		<!-- project dependencies -->
 		<dependency>
 			<groupId>de.adorsys.ledgers</groupId>
-			<artifactId>ledgers-core</artifactId>
+			<artifactId>ledgers-security</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

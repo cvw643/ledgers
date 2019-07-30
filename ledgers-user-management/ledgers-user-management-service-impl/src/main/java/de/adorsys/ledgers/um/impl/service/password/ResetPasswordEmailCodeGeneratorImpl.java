@@ -1,7 +1,7 @@
 package de.adorsys.ledgers.um.impl.service.password;
 
-import de.adorsys.ledgers.core.GenerateCode;
-import de.adorsys.ledgers.core.ResetPassword;
+import de.adorsys.ledgers.security.GenerateCode;
+import de.adorsys.ledgers.security.ResetPassword;
 import de.adorsys.ledgers.um.api.exception.UserManagementModuleException;
 import de.adorsys.ledgers.um.api.service.ResetPasswordCodeGenerator;
 import de.adorsys.ledgers.um.db.domain.ResetPasswordEntity;
