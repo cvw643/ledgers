@@ -3,7 +3,6 @@ package de.adorsys.ledgers.deposit.api.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.adorsys.ledgers.deposit.api.domain.*;
-import de.adorsys.ledgers.deposit.api.exception.DepositErrorCode;
 import de.adorsys.ledgers.deposit.api.exception.DepositModuleException;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountConfigService;
 import de.adorsys.ledgers.deposit.api.service.DepositAccountService;
@@ -169,7 +168,7 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
     public void depositCash(String accountId, AmountBO amount, String recordUser) {
         if (amount.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw DepositModuleException.builder()
-                          .errorCode(DepositErrorCode.DEPOSIT_OPERATION_FAILURE)
+                          .errorCode(DEPOSIT_OPERATION_FAILURE)
                           .devMsg("Deposited amount must be greater than zero")
                           .build();
         }
@@ -178,7 +177,7 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
         AccountReferenceBO accountReference = depositAccountMapper.toAccountReferenceBO(depositAccount);
         if (!accountReference.getCurrency().equals(amount.getCurrency())) {
             throw DepositModuleException.builder()
-                          .errorCode(DepositErrorCode.DEPOSIT_OPERATION_FAILURE)
+                          .errorCode(DEPOSIT_OPERATION_FAILURE)
                           .devMsg(String.format("Deposited amount and account currencies are different. Requested currency: %s, Account currency: %s",
                                   amount.getCurrency().getCurrencyCode(), accountReference.getCurrency().getCurrencyCode()))
                           .build();
@@ -367,7 +366,7 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
             return objectMapper.writeValueAsString(transactionDetails);
         } catch (JsonProcessingException e) {
             throw DepositModuleException.builder()
-                          .errorCode(DepositErrorCode.PAYMENT_PROCESSING_FAILURE)
+                          .errorCode(PAYMENT_PROCESSING_FAILURE)
                           .devMsg(e.getMessage())
                           .build();
         }
