@@ -25,13 +25,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.adorsys.ledgers.deposit.api.exception.DepositErrorCode.DEPOSIT_ACCOUNT_EXISTS;
-import static de.adorsys.ledgers.deposit.api.exception.DepositErrorCode.DEPOSIT_ACCOUNT_NOT_FOUND;
+import static de.adorsys.ledgers.deposit.api.domain.AccountStatusBO.ENABLED;
+import static de.adorsys.ledgers.deposit.api.exception.DepositErrorCode.*;
 
 @Slf4j
 @Service
 public class DepositAccountServiceImpl extends AbstractServiceImpl implements DepositAccountService {
     private static final String MSG_IBAN_NOT_FOUND = "Accounts with iban %s not found";
+    private static final String OPERATION_ON_BLOCKED_ACCOUNT = "Operation is Rejected as account: %s is %s";
 
     private final DepositAccountRepository depositAccountRepository;
     private final DepositAccountMapper depositAccountMapper = Mappers.getMapper(DepositAccountMapper.class);
@@ -68,6 +69,19 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
         da.setBranch(branch);
         DepositAccount saved = depositAccountRepository.save(da);
         return depositAccountMapper.toDepositAccountBO(saved);
+    }
+
+    @Override
+    public DepositAccountDetailsBO getDepositAccountByIbanAndCheckStatus(String iban, LocalDateTime refTime, boolean withBalances) {
+        DepositAccountDetailsBO account = getDepositAccountByIban(iban, refTime, withBalances);
+        AccountStatusBO accountStatus = account.getAccount().getAccountStatus();
+        if (accountStatus != ENABLED) {
+            throw DepositModuleException.builder()
+                          .errorCode(ACCOUNT_BLOCKED_DELETED)
+                          .devMsg(String.format(OPERATION_ON_BLOCKED_ACCOUNT, account.getAccount().getIban(), accountStatus))
+                          .build();
+        }
+        return account;
     }
 
     @Override
