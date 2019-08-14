@@ -4,7 +4,10 @@ import de.adorsys.ledgers.middleware.api.domain.sca.OpTypeTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.SCALoginResponseTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.ScaInfoTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.ScaStatusTO;
-import de.adorsys.ledgers.middleware.api.domain.um.*;
+import de.adorsys.ledgers.middleware.api.domain.um.BearerTokenTO;
+import de.adorsys.ledgers.middleware.api.domain.um.LoginKeyDataTO;
+import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
+import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
 import de.adorsys.ledgers.middleware.api.exception.MiddlewareModuleException;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareOnlineBankingService;
 import de.adorsys.ledgers.middleware.impl.converter.BearerTokenMapper;
@@ -55,7 +58,8 @@ public class MiddlewareOnlineBankingServiceImpl implements MiddlewareOnlineBanki
         String authorisationId = opId;
         String scaId = opId;
         BearerTokenBO loginTokenBO = proceedToLogin(user, pin, role, scaId, authorisationId);
-        if (!scaRequired(user, OpTypeBO.LOGIN)) {
+        return authorizeResponse(loginTokenBO);
+      /*  if (!scaRequired(user, OpTypeBO.LOGIN)) { //TODO This is disabled to perform real-like online banking. So from here on this one should only be used for OBA.
             return authorizeResponse(loginTokenBO);
         } else {
             SCAOperationBO scaOperationBO;
@@ -76,7 +80,7 @@ public class MiddlewareOnlineBankingServiceImpl implements MiddlewareOnlineBanki
             authorizationService.loginToken(loginTokenBO.getAccessTokenObject().buildScaInfoBO());
             response.setBearerToken(bearerTokenMapper.toBearerTokenTO(loginTokenBO));
             return response;
-        }
+        }*/
     }
 
     @Override
