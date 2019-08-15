@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @PostingResource
@@ -19,7 +20,7 @@ public class PostingController implements PostingApi {
     private final PostingService postingService;
 
     /**
-     * @param posting posting to create
+     * @param postings list of postings to create
      * @return persisted posting
      */
     @ApiOperation(value = "Creates a new Posting.",
@@ -27,9 +28,11 @@ public class PostingController implements PostingApi {
                             "- The new posting can only be stored is the oldest is not part of a closed accounting period.\n" +
                             "- A posting time can not be older than a closed accounting period. ")
     @PostMapping(path = "/postings")
-    public ResponseEntity<PostingBO> newPosting(PostingBO posting) {
-        PostingBO newPosting = postingService.newPosting(posting);
-        return ResponseEntity.ok(newPosting);
+    public ResponseEntity<List<PostingBO>> newPosting(List<PostingBO> postings) {
+        List<PostingBO> newPostings = postings.stream()
+                                              .map(postingService::newPosting)
+                                              .collect(Collectors.toList());
+        return ResponseEntity.ok(newPostings);
     }
 
     /**

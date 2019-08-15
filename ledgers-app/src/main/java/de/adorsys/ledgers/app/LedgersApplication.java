@@ -22,6 +22,7 @@ import de.adorsys.ledgers.middleware.client.rest.AccountRestClient;
 import de.adorsys.ledgers.middleware.impl.EnableLedgersMiddlewareService;
 import de.adorsys.ledgers.middleware.rest.EnableLedgersMiddlewareRest;
 import de.adorsys.ledgers.postings.impl.EnablePostingService;
+import de.adorsys.ledgers.rest.EnablePostingRest;
 import de.adorsys.ledgers.sca.mock.MockSmtpServer;
 import de.adorsys.ledgers.sca.service.EnableSCAService;
 import de.adorsys.ledgers.um.impl.EnableUserManagementService;
@@ -44,6 +45,7 @@ import java.util.Arrays;
 @EnableUserManagementService
 @EnableSCAService
 @EnablePostingService
+@EnablePostingRest
 @EnableDepositAccountService
 @EnableLedgersMiddlewareService
 @EnableLedgersMiddlewareRest

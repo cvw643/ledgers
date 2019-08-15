@@ -1,14 +1,19 @@
 package de.adorsys.ledgers.rest.posting.controller;
 
 import de.adorsys.ledgers.postings.api.domain.ChartOfAccountBO;
+import de.adorsys.ledgers.postings.api.exception.PostingModuleException;
 import de.adorsys.ledgers.postings.api.service.ChartOfAccountService;
-import de.adorsys.ledgers.rest.exception.NotFoundRestException;
+import de.adorsys.ledgers.rest.annotation.PostingResource;
+import de.adorsys.ledgers.rest.posting.api.PostingApi;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
 import java.security.Principal;
+
+import static de.adorsys.ledgers.postings.api.exception.PostingErrorCode.CHART_OF_ACCOUNT_NOT_FOUND;
 
 @RestController
 @PostingResource
@@ -30,7 +35,11 @@ public class ChartOfAccountController implements PostingApi {
 
     @GetMapping(path = "/coas/{id}")
     public ResponseEntity<ChartOfAccountBO> findChartOfAccountsById(@PathVariable("id") String id) {
-        ChartOfAccountBO coa = chartOfAccountService.findChartOfAccountsById(id).orElseThrow(() -> new NotFoundRestException(id));
+        ChartOfAccountBO coa = chartOfAccountService.findChartOfAccountsById(id)
+                                       .orElseThrow(() -> PostingModuleException.builder()
+                                                                  .errorCode(CHART_OF_ACCOUNT_NOT_FOUND)
+                                                                  .devMsg(String.format(COA_NF_BY_ID_MSG, "id", id))
+                                                                  .build());
         return ResponseEntity.ok(coa);
     }
 
@@ -42,7 +51,11 @@ public class ChartOfAccountController implements PostingApi {
      */
     @GetMapping(path = "/coas", params = {"name"})
     public ResponseEntity<ChartOfAccountBO> findChartOfAccountsByName(@RequestParam(name = "name") String name) {
-        ChartOfAccountBO coa = chartOfAccountService.findChartOfAccountsByName(name).orElseThrow(() -> new NotFoundRestException(name));
+        ChartOfAccountBO coa = chartOfAccountService.findChartOfAccountsByName(name)
+                                       .orElseThrow(() -> PostingModuleException.builder()
+                                                                  .errorCode(CHART_OF_ACCOUNT_NOT_FOUND)
+                                                                  .devMsg(String.format(COA_NF_BY_ID_MSG, "name", name))
+                                                                  .build());
         return ResponseEntity.ok(coa);
     }
 }

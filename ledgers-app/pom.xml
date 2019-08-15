@@ -61,6 +61,12 @@
 
         <dependency>
             <groupId>de.adorsys.ledgers</groupId>
+            <artifactId>ledgers-postings-rest-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.adorsys.ledgers</groupId>
             <artifactId>ledgers-postings-service-api</artifactId>
             <version>${project.version}</version>
         </dependency>

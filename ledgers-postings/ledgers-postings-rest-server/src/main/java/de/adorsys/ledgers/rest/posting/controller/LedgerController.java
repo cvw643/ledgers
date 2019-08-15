@@ -2,8 +2,11 @@ package de.adorsys.ledgers.rest.posting.controller;
 
 import de.adorsys.ledgers.postings.api.domain.LedgerAccountBO;
 import de.adorsys.ledgers.postings.api.domain.LedgerBO;
+import de.adorsys.ledgers.postings.api.exception.PostingModuleException;
 import de.adorsys.ledgers.postings.api.service.LedgerService;
-import de.adorsys.ledgers.rest.exception.NotFoundRestException;
+import de.adorsys.ledgers.rest.annotation.PostingResource;
+import de.adorsys.ledgers.rest.posting.api.PostingApi;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriBuilder;
@@ -41,7 +44,11 @@ public class LedgerController implements PostingApi {
 
     @GetMapping(path = "/ledgers/{id}")
     public ResponseEntity<LedgerBO> findLedgerById(@PathVariable("id") String id) {
-        LedgerBO ledger = ledgerService.findLedgerById(id).orElseThrow(() -> new NotFoundRestException(id));
+        LedgerBO ledger = ledgerService.findLedgerById(id)
+                                  .orElseThrow(() -> PostingModuleException.builder()
+                                                             .errorCode(LEDGER_NOT_FOUND)
+                                                             .devMsg(String.format(LEDGER_NF_MSG, "id", id))
+                                                             .build());
         return ResponseEntity.ok(ledger);
     }
 
@@ -53,7 +60,11 @@ public class LedgerController implements PostingApi {
      */
     @GetMapping(path = "/ledgers", params = {"ledgerName"})
     public ResponseEntity<LedgerBO> findLedgerByName(@RequestParam(name = "ledgerName") String ledgerName) {
-        LedgerBO ledger = ledgerService.findLedgerByName(ledgerName).orElseThrow(() -> new NotFoundRestException(ledgerName));
+        LedgerBO ledger = ledgerService.findLedgerByName(ledgerName)
+                                  .orElseThrow(() -> PostingModuleException.builder()
+                                                             .errorCode(LEDGER_NOT_FOUND)
+                                                             .devMsg(String.format(LEDGER_NF_MSG, "name", ledgerName))
+                                                             .build());
         return ResponseEntity.ok(ledger);
     }
 
@@ -74,7 +85,11 @@ public class LedgerController implements PostingApi {
 
     @GetMapping(path = "/accounts/{id}")
     public ResponseEntity<LedgerAccountBO> findLedgerAccountById(@PathVariable("id") String id) {
-        LedgerAccountBO la = ledgerService.findLedgerAccountById(id).orElseThrow(() -> new NotFoundRestException(id));
+        LedgerAccountBO la = ledgerService.findLedgerAccountById(id)
+                                     .orElseThrow(() -> PostingModuleException.builder()
+                                                                .errorCode(LEDGER_ACCOUNT_NOT_FOUND)
+                                                                .devMsg(String.format(LA_NF_MSG, "id", id))
+                                                                .build());
         return ResponseEntity.ok(la);
     }
 
