@@ -59,28 +59,6 @@ public class MiddlewareOnlineBankingServiceImpl implements MiddlewareOnlineBanki
         String scaId = opId;
         BearerTokenBO loginTokenBO = proceedToLogin(user, pin, role, scaId, authorisationId);
         return authorizeResponse(loginTokenBO);
-      /*  if (!scaRequired(user, OpTypeBO.LOGIN)) { //TODO This is disabled to perform real-like online banking. So from here on this one should only be used for OBA.
-            return authorizeResponse(loginTokenBO);
-        } else {
-            SCAOperationBO scaOperationBO;
-            UserTO userTo = scaUtils.user(user);
-            String scaUserDataId = null;
-            String opData = opId;
-            AuthCodeDataBO authCodeData = new AuthCodeDataBO(user.getLogin(), scaUserDataId,
-                    keyData.toOpId(), opData, keyData.messageTemplate(),
-                    defaultLoginTokenExpireInSeconds, OpTypeBO.LOGIN, authorisationId, 0);
-            if (userTo.getScaUserData().size() == 1) {
-                ScaUserDataTO chosenScaMethod = userTo.getScaUserData().iterator().next();
-                authCodeData.setScaUserDataId(chosenScaMethod.getId());
-                scaOperationBO = scaOperationService.generateAuthCode(authCodeData, user, ScaStatusBO.SCAMETHODSELECTED);
-            } else {
-                scaOperationBO = scaOperationService.createAuthCode(authCodeData, ScaStatusBO.PSUIDENTIFIED);
-            }
-            SCALoginResponseTO response = toScaResponse(user, keyData.messageTemplate(), scaOperationBO);
-            authorizationService.loginToken(loginTokenBO.getAccessTokenObject().buildScaInfoBO());
-            response.setBearerToken(bearerTokenMapper.toBearerTokenTO(loginTokenBO));
-            return response;
-        }*/
     }
 
     @Override
