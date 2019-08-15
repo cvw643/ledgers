@@ -11,7 +11,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.ArrayList;
 
-//@Configuration
+//@Configuration //TODO fix this to be used as separate config for swagger-ui
 //@EnableSwagger2
 public class SwaggerConfig extends WebMvcConfigurationSupport {
    // @Bean

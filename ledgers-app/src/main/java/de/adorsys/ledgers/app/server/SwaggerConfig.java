@@ -1,16 +1,16 @@
 package de.adorsys.ledgers.app.server;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import de.adorsys.ledgers.middleware.rest.annotation.MiddlewareUserResource;
-import de.adorsys.ledgers.rest.annotation.PostingResource;
+import de.adorsys.ledgers.postings.rest.api.annotation.PostingResource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
-import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
@@ -32,13 +32,10 @@ public class SwaggerConfig {
 
     @Bean
     public Docket productApi() {
-        Predicate<RequestHandler> requestHandlerPredicate = a -> a.isAnnotatedWith(PostingResource.class)|| a.isAnnotatedWith(MiddlewareUserResource.class);
-
         return new Docket(DocumentationType.SWAGGER_2)
                        .groupName("001 - LEDGERS API")
                        .select()
-                       //.apis(RequestHandlerSelectors.withClassAnnotation(MiddlewareUserResource.class))
-                       .apis(requestHandlerPredicate)
+                       .apis(Predicates.or(RequestHandlerSelectors.withClassAnnotation(MiddlewareUserResource.class), RequestHandlerSelectors.withClassAnnotation(PostingResource.class)))
                        .paths(PathSelectors.any())
                        .build()
                        .pathMapping("/")

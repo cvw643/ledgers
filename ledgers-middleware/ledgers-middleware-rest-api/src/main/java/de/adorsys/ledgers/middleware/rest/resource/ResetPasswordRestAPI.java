@@ -6,9 +6,11 @@ import de.adorsys.ledgers.security.UpdatePassword;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-@Api(tags = "LDG007 - Reset password for user")
+@Api(tags = "LDG006 - Reset password for user")
 public interface ResetPasswordRestAPI {
     String BASE_PATH = "/password";
 

@@ -1,4 +1,4 @@
-package de.adorsys.ledgers.rest.annotation;
+package de.adorsys.ledgers.postings.rest.api.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
