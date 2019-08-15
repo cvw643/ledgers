@@ -2,24 +2,21 @@ package de.adorsys.ledgers.rest.posting.controller;
 
 import de.adorsys.ledgers.postings.api.domain.PostingBO;
 import de.adorsys.ledgers.postings.api.service.PostingService;
-import io.swagger.annotations.Api;
+import de.adorsys.ledgers.rest.annotation.PostingResource;
+import de.adorsys.ledgers.rest.posting.api.PostingApi;
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Api(description = "Posting Controller. Handles postings (journal entries).")
 @RestController
-public class PostingController {
+@PostingResource
+@RequiredArgsConstructor
+@RequestMapping(PostingApi.BASE_PATH)
+public class PostingController implements PostingApi {
     private final PostingService postingService;
-
-    public PostingController(PostingService postingService) {
-        this.postingService = postingService;
-    }
 
     /**
      * @param posting posting to create

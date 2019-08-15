@@ -11,15 +11,19 @@ import org.springframework.web.util.UriBuilder;
 import java.net.URI;
 import java.security.Principal;
 
+import static de.adorsys.ledgers.postings.api.exception.PostingErrorCode.LEDGER_ACCOUNT_NOT_FOUND;
+import static de.adorsys.ledgers.postings.api.exception.PostingErrorCode.LEDGER_NOT_FOUND;
+
 @RestController
-public class LedgerController {
+@PostingResource
+@RequiredArgsConstructor
+@RequestMapping(PostingApi.BASE_PATH)
+public class LedgerController implements PostingApi {
+    private static final String LEDGER_NF_MSG = "Ledger with %s: %s not found!";
+    private static final String LA_NF_MSG = "Ledger Account with %s: %s not found!";
+
     private final Principal principal;
     private final LedgerService ledgerService;
-
-    public LedgerController(Principal principal, LedgerService ledgerService) {
-        this.principal = principal;
-        this.ledgerService = ledgerService;
-    }
 
     /**
      * Creates a new Ledger.

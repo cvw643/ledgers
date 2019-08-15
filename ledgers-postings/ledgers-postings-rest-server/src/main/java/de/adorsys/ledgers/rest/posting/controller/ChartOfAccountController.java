@@ -11,14 +11,14 @@ import java.net.URI;
 import java.security.Principal;
 
 @RestController
-public class ChartOfAccountController {
+@PostingResource
+@RequestMapping(PostingApi.BASE_PATH)
+@RequiredArgsConstructor
+public class ChartOfAccountController implements PostingApi {
+    private static final String COA_NF_BY_ID_MSG = "Chart of Account with %s: %s not found!";
+
     private final Principal principal;
     private final ChartOfAccountService chartOfAccountService;
-
-    public ChartOfAccountController(Principal principal, ChartOfAccountService chartOfAccountService) {
-        this.principal = principal;
-        this.chartOfAccountService = chartOfAccountService;
-    }
 
     @PostMapping(path = "/coas")
     public ResponseEntity<Void> newChartOfAccount(ChartOfAccountBO chartOfAccount, UriBuilder uri) {
