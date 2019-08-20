@@ -31,6 +31,7 @@ import static de.adorsys.ledgers.postings.api.domain.PostingTypeBO.BUSI_TX;
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
     private static final String MOCK_DATA_IMPORT = "MockDataImport";
+    public static final String SEPA_CLEARING_ACCOUNT = "11031";
     private final SerializeService serializeService;
     private final PostingService postingService;
     private final LedgerService ledgerService;
@@ -52,7 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
     private void performTransaction(MockBookingDetails details) {
         LedgerBO ledger = loadLedger();
 
-        if (details.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+        if (details.isPaymentTransaction()) {
             performPaymentTransaction(ledger, details);
         } else {
             performDepositTransaction(ledger, details);
@@ -122,7 +123,7 @@ public class TransactionServiceImpl implements TransactionService {
     private LedgerAccountBO checkOtherAccountOrLoadClearing(MockBookingDetails details, LedgerBO ledger) {
         return ledgerService.checkIfLedgerAccountExist(ledger, details.getOtherAccount())
                        ? ledgerService.findLedgerAccount(ledger, details.getOtherAccount())
-                       : ledgerService.findLedgerAccount(ledger, "11031");
+                       : ledgerService.findLedgerAccount(ledger, SEPA_CLEARING_ACCOUNT);
     }
 
     private PostingLineBO fillCommonPostingLineFields(PostingBO posting, MockBookingDetails details, PostingLineBO line) {
@@ -170,13 +171,13 @@ public class TransactionServiceImpl implements TransactionService {
         lineDetails.setEndToEndId("MockedTransaction");
         lineDetails.setBookingDate(details.getBookingDate());
         lineDetails.setValueDate(details.getValueDate());
-        lineDetails.setTransactionAmount(new AmountBO(details.getCurrency(), details.getAmount().compareTo(BigDecimal.ZERO) < 1
+        lineDetails.setTransactionAmount(new AmountBO(details.getCurrency(), details.isPaymentTransaction()
                                                                                      ? details.getAmount().negate()
                                                                                      : details.getAmount()));
         lineDetails.setCreditorName(details.getCrDrName());
-        AccountReferenceBO creditor = getCrDrReference(details, details.getAmount().compareTo(BigDecimal.ZERO) < 1);
+        AccountReferenceBO creditor = getCrDrReference(details, details.isPaymentTransaction());
         lineDetails.setCreditorAccount(creditor);
-        AccountReferenceBO debtor = getCrDrReference(details, details.getAmount().compareTo(BigDecimal.ZERO) > 0);
+        AccountReferenceBO debtor = getCrDrReference(details, !details.isPaymentTransaction());
         lineDetails.setDebtorAccount(debtor);
         lineDetails.setRemittanceInformationUnstructured(details.getRemittance());
         return serializeService.serializeOprDetails(lineDetails);

@@ -9,17 +9,17 @@ import java.util.Currency;
 
 @Data
 public class MockBookingDetails {
-    String userAccount;
-    LocalDate bookingDate;
-    LocalDate valueDate;
-    String remittance;
-    String crDrName;
-    String otherAccount;
-    BigDecimal amount;
-    Currency currency;
+    private String userAccount;
+    private LocalDate bookingDate;
+    private LocalDate valueDate;
+    private String remittance;
+    private String crDrName;
+    private String otherAccount;
+    private BigDecimal amount;
+    private Currency currency;
 
     @JsonIgnore
-    public boolean isCreditTransaction() {
-        return BigDecimal.ZERO.compareTo(amount) < 0;
+    public boolean isPaymentTransaction() {
+        return amount.compareTo(BigDecimal.ZERO) < 0;
     }
 }

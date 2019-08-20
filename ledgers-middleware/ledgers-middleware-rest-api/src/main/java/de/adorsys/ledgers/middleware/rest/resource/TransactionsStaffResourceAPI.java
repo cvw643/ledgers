@@ -14,14 +14,13 @@ import java.util.Map;
 @Api(tags = "LDG010 - Transactions Mock Upload (STAFF access)")
 public interface TransactionsStaffResourceAPI {
     String BASE_PATH = "/staff-access/transactions";
+
     /**
      * Registers a new user within a given branch.
      *
      * @return user object without pin
      */
-    @ApiOperation(value = "Posts transactions to Ledgers",
-            notes = "Gets user by ID if it's within the branch.",
-            authorizations = @Authorization(value = "apiKey"))
+    @ApiOperation(value = "Posts transactions to Ledgers", authorizations = @Authorization(value = "apiKey"))
     @PostMapping
     ResponseEntity<Map<String, String>> transactions(@RequestBody List<MockBookingDetails> data);
 }
