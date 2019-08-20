@@ -85,35 +85,6 @@ public class TransactionServiceImpl implements TransactionService {
         postingService.newPosting(posting);
     }
 
-    /*private PostingLineBO composeDebitLine(PostingBO posting, MockBookingDetails details, LedgerBO ledger, boolean isPayment) {
-        PostingLineBO line = new PostingLineBO();
-        line.setId(Ids.id());
-        line.setAccount(isPayment ? ledgerService.findLedgerAccount(ledger, details.getUserAccount())
-                                : ledgerService.findLedgerAccount(ledger, "11031"));
-        line.setDebitAmount(isPayment ? details.getAmount().negate()
-                                    : details.getAmount());
-        line.setCreditAmount(BigDecimal.ZERO);
-        return getPostingLineBO(posting, details, line);
-    }
-
-    private PostingLineBO composeCreditLineDep(PostingBO posting, MockBookingDetails details, LedgerBO ledger) {
-        PostingLineBO line = new PostingLineBO();
-        line.setId(Ids.id());
-        line.setAccount(ledgerService.findLedgerAccount(ledger, details.getUserAccount()));
-        line.setDebitAmount(BigDecimal.ZERO);
-        line.setCreditAmount(details.getAmount());
-        return getPostingLineBO(posting, details, line);
-    }
-
-    private PostingLineBO composeDebitLineDep(PostingBO posting, MockBookingDetails details, LedgerBO ledger) {
-        PostingLineBO line = new PostingLineBO();
-        line.setId(Ids.id());
-        line.setAccount(ledgerService.findLedgerAccount(ledger, "11031"));
-        line.setDebitAmount(details.getAmount());
-        line.setCreditAmount(BigDecimal.ZERO);
-        return getPostingLineBO(posting, details, line);
-    }*/
-
     private PostingLineBO composeLine(PostingBO posting, MockBookingDetails details, LedgerBO ledger, boolean isPayment, boolean isDebitLine) {
         PostingLineBO line = new PostingLineBO();
         line.setId(Ids.id());
@@ -154,37 +125,6 @@ public class TransactionServiceImpl implements TransactionService {
                        : ledgerService.findLedgerAccount(ledger, "11031");
     }
 
-
-    /* private PostingLineBO composeDebitLinePmt(PostingBO posting, MockBookingDetails details, LedgerBO ledger) {
-         PostingLineBO line = new PostingLineBO();
-         line.setId(Ids.id());
-         line.setAccount(ledgerService.findLedgerAccount(ledger, details.getUserAccount()));
-         line.setDebitAmount(details.getAmount().negate());
-         line.setCreditAmount(BigDecimal.ZERO);
-         return getPostingLineBO(posting, details, line);
-     }
-
-     private PostingLineBO composeCreditLinePmt(PostingBO posting, MockBookingDetails details, LedgerBO ledger) {
-         PostingLineBO line = new PostingLineBO();
-         line.setId(Ids.id());
-         LedgerAccountBO account = ledgerService.checkIfLedgerAccountExist(ledger, details.getOtherAccount())
-                                           ? ledgerService.findLedgerAccount(ledger, details.getOtherAccount())
-                                           : ledgerService.findLedgerAccount(ledger, "11031");
-         line.setAccount(account);
-         line.setDebitAmount(BigDecimal.ZERO);
-         line.setCreditAmount(details.getAmount().negate());
-         return getPostingLineBO(posting, details, line);
-     }
-
-     private LedgerAccountBO getLedgerAccountByTransactionType(String iban, LedgerBO ledger, boolean isPayment) {
-         if (isPayment) {
-             return ledgerService.checkIfLedgerAccountExist(ledger, iban)
-                            ? ledgerService.findLedgerAccount(ledger, iban)
-                            : ledgerService.findLedgerAccount(ledger, "11031");
-         } else {
-             return
-         }
-     }*/
     private PostingLineBO fillCommonPostingLineFields(PostingBO posting, MockBookingDetails details, PostingLineBO line) {
         String lineDetails = createPostingLineDetails(details, line.getId());
         line.setDetails(lineDetails);
