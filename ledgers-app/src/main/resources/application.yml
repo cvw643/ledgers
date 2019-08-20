@@ -71,6 +71,8 @@ sca:
       subject: "Your TAN from MockBank"
   multilevel.enabled: false
   final.weight: 100
+  challenge_data:
+    path:
 
 reset-password:
   expiration-code-minites: 5
@@ -125,9 +127,9 @@ spring:
     change-log: classpath:liquibase-master-changelog.xml
 db:
   host: localhost
-  user: ledgers
-  password: ledgers
-  database: ledgers
+  user: cms
+  password: cms
+  database: consent
   port: 5432
   url: jdbc:postgresql://${db.host}:${db.port}/${db.database}
 ---
