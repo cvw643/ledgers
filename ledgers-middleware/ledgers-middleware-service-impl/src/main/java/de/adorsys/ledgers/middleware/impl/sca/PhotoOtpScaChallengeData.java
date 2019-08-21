@@ -15,7 +15,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class PhotoOtpScaChallengeData extends AbstractScaChallengeData {
-    private static final String IMAGE_TAN_PATH = "photo-tan-1.png";
+    private static final String IMAGE_TAN_PATH = "photo-tan-1.png"; // stub for testing purposes
 
     @Override
     public ChallengeDataTO getChallengeData(ScaDataInfoTO template) {

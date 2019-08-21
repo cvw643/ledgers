@@ -7,6 +7,5 @@ public enum ScaMethodTypeTO {
     PHOTO_OTP,
     PUSH_OTP,
     SMS_OTP,
-    APP_OTP,
-    DECOUPLED
+    APP_OTP
 }
