@@ -166,8 +166,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public void decodeStaticTanForUser(UserBO user) {
-        user.getScaUserData()
-                .forEach(this::decodeStaticTan);
+        Optional.ofNullable(user.getScaUserData())
+                .ifPresent(d -> d.forEach(this::decodeStaticTan));
     }
 
     private void decodeStaticTan(ScaUserDataBO scaUserData) {
