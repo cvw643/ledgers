@@ -15,6 +15,7 @@ public abstract class AbstractScaChallengeData implements ScaChallengeData {
     @Autowired
     private Map<String, ChallengeDataTO> challengeDatas;
 
+    @Override
     public ChallengeDataTO getChallengeData(ScaDataInfoTO template) {
         ChallengeDataTO data = challengeDatas.get(getScaMethodType().name());
         data.setAdditionalInformation(format(data.getAdditionalInformation(), template.getCode(), template.getScaUserDataTO().getMethodValue()));
