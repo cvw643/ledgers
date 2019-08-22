@@ -159,13 +159,27 @@ public class UserServiceImpl implements UserService {
         return userBOs;
     }
 
+    @Override
+    public int countUsersByBranch(String branch) {
+        return userRepository.countByBranch(branch);
+    }
+
+    @NotNull
+    public UserEntity getUser(String login) {
+        return userRepository.findFirstByLogin(login)
+                       .orElseThrow(() -> UserManagementModuleException.builder()
+                                                  .errorCode(USER_NOT_FOUND)
+                                                  .devMsg(String.format(USER_WITH_LOGIN_NOT_FOUND, login))
+                                                  .build());
+    }
+
     private UserBO convertToUserBoAndDecodeTan(UserEntity user) {
         UserBO userBO = userConverter.toUserBO(user);
         decodeStaticTanForUser(userBO);
         return userBO;
     }
 
-    public void decodeStaticTanForUser(UserBO user) {
+    private void decodeStaticTanForUser(UserBO user) {
         Optional.ofNullable(user.getScaUserData())
                 .ifPresent(d -> d.forEach(this::decodeStaticTan));
     }
@@ -176,24 +190,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    public int countUsersByBranch(String branch) {
-        return userRepository.countByBranch(branch);
-    }
-
     private void hashStaticTan(UserEntity userEntity) {
         userEntity.getScaUserData().stream()
                 .filter(d -> StringUtils.isNotBlank(d.getStaticTan()))
                 .forEach(d -> d.setStaticTan(tanEncryptor.encryptTan(d.getStaticTan())));
-    }
-
-    @NotNull
-    public UserEntity getUser(String login) {
-        return userRepository.findFirstByLogin(login)
-                       .orElseThrow(() -> UserManagementModuleException.builder()
-                                                  .errorCode(USER_NOT_FOUND)
-                                                  .devMsg(String.format(USER_WITH_LOGIN_NOT_FOUND, login))
-                                                  .build());
     }
 
     private void checkUserAlreadyExists(UserBO userBO) {
