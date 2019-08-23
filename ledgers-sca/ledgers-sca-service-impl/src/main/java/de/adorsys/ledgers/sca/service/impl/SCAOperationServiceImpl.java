@@ -68,7 +68,6 @@ public class SCAOperationServiceImpl implements SCAOperationService, Initializin
     private final SCAOperationRepository repository;
     private final AuthCodeGenerator authCodeGenerator;
     private final SCAOperationMapper scaOperationMapper;
-    private final TanEncryptor tanEncryptor;
     private final List<SCASender> sendersList;
     private Map<ScaMethodTypeBO, SCASender> senders = new HashMap<>();
     private HashGenerator hashGenerator = new HashGeneratorImpl();
