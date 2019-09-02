@@ -1,7 +1,6 @@
 package de.adorsys.ledgers.deposit.api.service.impl;
 
 import de.adorsys.ledgers.deposit.db.domain.Payment;
-import de.adorsys.ledgers.deposit.db.domain.TransactionStatus;
 import de.adorsys.ledgers.deposit.db.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +23,5 @@ public class PaymentExecutionScheduler {
         log.info("Scheduler started at {}", LocalDateTime.now());
         List<Payment> payments = paymentRepository.getAllDuePayments();
         payments.forEach(p -> executionService.executePayment(p, SCHEDULER));
-        for (Payment payment : payments) {
-            if (payment.getTransactionStatus() == TransactionStatus.RJCT){
-                log.info("Scheduler couldn't execute payment : {}. Insufficient amount to complete the operation", payment.getTransactionStatus());
-            } else {
-                log.info("Scheduler executed : {} payments", payments.size());
-            }
-        }
-
     }
 }

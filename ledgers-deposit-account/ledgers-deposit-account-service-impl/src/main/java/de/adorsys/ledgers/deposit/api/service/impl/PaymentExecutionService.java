@@ -10,6 +10,7 @@ import de.adorsys.ledgers.deposit.db.domain.PaymentType;
 import de.adorsys.ledgers.deposit.db.domain.TransactionStatus;
 import de.adorsys.ledgers.deposit.db.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.objectlab.kit.datecalc.common.DateCalculator;
 import net.objectlab.kit.datecalc.common.DefaultHolidayCalendar;
 import net.objectlab.kit.datecalc.common.HolidayCalendar;
@@ -29,6 +30,7 @@ import java.util.List;
 
 import static de.adorsys.ledgers.deposit.api.exception.DepositErrorCode.PAYMENT_PROCESSING_FAILURE;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentExecutionService implements InitializingBean {
@@ -52,6 +54,7 @@ public class PaymentExecutionService implements InitializingBean {
 
         if (!confirmationOfFunds) {
             updateTransactionStatus(payment, TransactionStatus.RJCT);
+            log.info("Scheduler couldn't execute payment : {}. Insufficient amount to complete the operation", payment.getTransactionStatus());
             return TransactionStatusBO.RJCT;
         }
         LocalDateTime executionTime = LocalDateTime.now();
