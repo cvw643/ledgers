@@ -53,8 +53,8 @@ public class PaymentExecutionService implements InitializingBean {
         boolean confirmationOfFunds = accountService.confirmationOfFunds(new FundsConfirmationRequestBO(null, paymentBO.getDebtorAccount(), amountToVerify, null, null));
 
         if (!confirmationOfFunds) {
-            updateTransactionStatus(payment, TransactionStatus.RJCT);
-            log.info("Scheduler couldn't execute payment : {}. Insufficient amount to complete the operation", payment.getTransactionStatus());
+            updatePaymentStatus(payment, TransactionStatus.RJCT);
+            log.info("Scheduler couldn't execute payment : {}. Insufficient funds to complete the operation", payment.getTransactionStatus());
             return TransactionStatusBO.RJCT;
         }
         LocalDateTime executionTime = LocalDateTime.now();
@@ -63,10 +63,10 @@ public class PaymentExecutionService implements InitializingBean {
 
         return payment.getPaymentType() == PaymentType.PERIODIC
                        ? schedulePayment(payment)
-                       : updateTransactionStatus(payment, TransactionStatus.ACSC);
+                       : updatePaymentStatus(payment, TransactionStatus.ACSC);
     }
 
-    private TransactionStatusBO updateTransactionStatus(Payment payment, TransactionStatus status) {
+    private TransactionStatusBO updatePaymentStatus(Payment payment, TransactionStatus status) {
         payment.setTransactionStatus(status);
         payment.setNextScheduledExecution(null);
         paymentRepository.save(payment);
