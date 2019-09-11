@@ -26,7 +26,7 @@ import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -222,8 +222,10 @@ public class DepositAccountServiceImpl extends AbstractServiceImpl implements De
     private void executeNativeQuery(String queryFilePath, String parameter, String errorMsg) {
         try {
             InputStream stream = loader.getResource(queryFilePath).getInputStream();
-            String query = IOUtils.toString(stream, Charset.defaultCharset());
-            entityManager.createNativeQuery(query).setParameter(1, parameter).executeUpdate();
+            String query = IOUtils.toString(stream, StandardCharsets.UTF_8);
+            entityManager.createNativeQuery(query)
+                    .setParameter(1, parameter)
+                    .executeUpdate();
         } catch (IOException e) {
             throw DepositModuleException.builder()
                           .devMsg(format(errorMsg, parameter, e.getMessage()))
