@@ -40,12 +40,13 @@ public class ValidationFilter extends GenericFilterBean {
                     }
                 }
             } catch (IOException e) {
-                log.error("Could not parse request body, msg: {}", e.getMessage());
+                String msg = String.format("Could not parse request body, msg: %s", e.getMessage());
+                log.error(msg);
+                ((HttpServletResponse) response).sendError(400, msg);
                 return;
             }
         }
         chain.doFilter(servletRequest, response);
-        return;
     }
 }
 
