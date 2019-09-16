@@ -31,6 +31,7 @@ public class PaymentBO {
     public boolean isValidAmount() {
         return targets.stream()
                        .map(PaymentTargetBO::getInstructedAmount)
-                       .allMatch(a -> a.getAmount().compareTo(BigDecimal.ZERO) > 0);
+                       .allMatch(a -> a.getAmount().compareTo(BigDecimal.ZERO) > 0
+                                              && a.getAmount().scale() < 3);
     }
 }
