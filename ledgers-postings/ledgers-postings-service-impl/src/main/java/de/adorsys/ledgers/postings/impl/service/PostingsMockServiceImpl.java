@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static de.adorsys.ledgers.postings.api.exception.PostingErrorCode.DOBLE_ENTRY_ERROR;
 
@@ -49,9 +50,7 @@ public class PostingsMockServiceImpl extends AbstractServiceImpl implements Post
         LocalDateTime now = LocalDateTime.now();
         postings.forEach(p -> performPostingUpdate(ledger, accountMap, now, p));
         log.info("Reformatting postings in Posting Service in {} seconds.", (double) (System.nanoTime() - start) / NANO_TO_SECOND);
-        long start1 = System.nanoTime();
-        postingRepository.saveAll(postings);
-        log.info("Saving postings to DB in {} seconds.", (double) (System.nanoTime() - start1) / NANO_TO_SECOND);
+        CompletableFuture.runAsync(() -> postingRepository.saveAll(postings));
     }
 
     private void performPostingUpdate(Ledger ledger, Map<String, LedgerAccount> accountMap, LocalDateTime now, Posting posting) {
