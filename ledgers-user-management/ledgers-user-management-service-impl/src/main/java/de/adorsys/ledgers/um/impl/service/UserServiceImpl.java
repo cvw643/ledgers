@@ -38,13 +38,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static de.adorsys.ledgers.um.api.exception.UserManagementErrorCode.*;
@@ -192,27 +188,12 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkDuplicateScaMethods(List<ScaUserDataBO> scaUserData) {
-        if (scaUserData.size() != scaUserData.stream()
-                                          .filter(distinctByKeys(ScaUserDataBO::getScaMethod, ScaUserDataBO::getMethodValue))
-                                          .count()) {
+        if (new HashSet<>(scaUserData).size() != scaUserData.size()) {
             throw UserManagementModuleException.builder()
                           .devMsg("Duplicating Sca Methods is forbidden!")
                           .errorCode(DUPLICATE_SCA)
                           .build();
         }
-    }
-
-    @SafeVarargs
-    private static <T> Predicate<T> distinctByKeys(Function<? super T, ?>... keyExtractors) {
-        final Map<List<?>, Boolean> seen = new ConcurrentHashMap<>();
-
-        return t -> {
-            final List<?> keys = Arrays.stream(keyExtractors)
-                                         .map(ke -> ke.apply(t))
-                                         .collect(Collectors.toList());
-
-            return seen.putIfAbsent(keys, Boolean.TRUE) == null;
-        };
     }
 
     private void checkIfPasswordModifiedAndEncode(UserEntity user) {
