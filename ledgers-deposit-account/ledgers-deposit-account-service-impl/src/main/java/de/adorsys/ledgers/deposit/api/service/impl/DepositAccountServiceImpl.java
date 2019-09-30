@@ -32,8 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.adorsys.ledgers.deposit.api.domain.AccountStatusBO.ENABLED;
-import static de.adorsys.ledgers.deposit.api.domain.BalanceTypeBO.CLOSING_BOOKED;
-import static de.adorsys.ledgers.deposit.api.domain.BalanceTypeBO.INTERIM_AVAILABLE;
+import static de.adorsys.ledgers.deposit.api.domain.BalanceTypeBO.*;
 import static de.adorsys.ledgers.deposit.api.exception.DepositErrorCode.*;
 import static java.lang.String.format;
 
