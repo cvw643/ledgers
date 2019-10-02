@@ -22,6 +22,7 @@ variables: &variables
 
   OPENSHIFT_NAMESPACE: "ledgers-dev"
   OPENSHIFT_SANDBOX_DEV_NAMESPACE: "adorsys-dynamic-sandbox-dev"
+  OPENSHIFT_NAMESPACE_BANKING_GATEWAY_DEV: "banking-gateway-dev"
 
   SONAR_HOST: "https://psd2-quality.cloud.adorsys.de"
 
@@ -162,6 +163,18 @@ Deploy Openshift (sandbox-dev):
   variables:
     DOCKER_TAG: latest
     OPENSHIFT_NAMESPACE:  ${OPENSHIFT_SANDBOX_DEV_NAMESPACE}
+  <<: *push_docker_openshift
+
+Deploy Openshift (banking-gateway-dev):
+  stage: Deployment
+  only:
+    - develop
+  environment:
+    name: dev
+    url: https://dev-bankinggateway-sandbox-ledgers.cloud.adorsys.de 
+  variables:
+    DOCKER_TAG: latest
+    OPENSHIFT_NAMESPACE:  ${OPENSHIFT_NAMESPACE_BANKING_GATEWAY_DEV}
   <<: *push_docker_openshift
 
 ##########
