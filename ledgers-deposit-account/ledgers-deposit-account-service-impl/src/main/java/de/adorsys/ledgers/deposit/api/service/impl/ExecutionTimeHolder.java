@@ -5,6 +5,7 @@ import de.adorsys.ledgers.deposit.db.domain.Payment;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -30,8 +31,8 @@ public class ExecutionTimeHolder {
 
     public static LocalDate getExecutionDate(Payment payment) {
         LocalDate nextExecution = holder.get(payment.getFrequency()).apply(payment);
-        return payment.getDayOfExecution() == null || payment.getFrequency().equals(FrequencyCode.DAILY) ||
-                       payment.getFrequency().equals(FrequencyCode.WEEKLY) || payment.getFrequency().equals(FrequencyCode.EVERYTWOWEEKS)
+        return payment.getDayOfExecution() == null ||
+                       EnumSet.of(FrequencyCode.DAILY, FrequencyCode.WEEKLY, FrequencyCode.EVERYTWOWEEKS).contains(payment.getFrequency())
                        ? nextExecution
                        : LocalDate.of(nextExecution.getYear(), nextExecution.getMonth(), payment.getDayOfExecution());
     }
