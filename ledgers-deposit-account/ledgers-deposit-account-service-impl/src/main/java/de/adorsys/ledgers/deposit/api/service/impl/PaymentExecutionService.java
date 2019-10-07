@@ -76,24 +76,24 @@ public class PaymentExecutionService implements InitializingBean {
 
     private TransactionStatusBO checkDailyPayment(Payment payment, String userName) {
         return payment.getExecutionRule().equals(PRECEDING)
-                       ? precedingExecution(payment,userName,payment.getStartDate().withDayOfMonth(payment.getDayOfExecution()))
-                       : followingExecution(payment,userName,payment.getStartDate().withDayOfMonth(payment.getDayOfExecution()));
+                       ? precedingExecution(payment, userName, payment.getStartDate().withDayOfMonth(payment.getDayOfExecution()))
+                       : followingExecution(payment, userName, payment.getStartDate().withDayOfMonth(payment.getDayOfExecution()));
     }
 
-    private TransactionStatusBO followingExecution(Payment payment, String userName, LocalDate dayOfExecution){
-        if (dateCalculator(PRECEDING,LocalDate.now()).isNonWorkingDay(LocalDate.now().minusDays(1)) && !dateCalculator(PRECEDING,LocalDate.now()).isNonWorkingDay(dayOfExecution)){
-            LocalDate prevBusinessDay = dateCalculator(PRECEDING,LocalDate.now().minusDays(1)).getCurrentBusinessDate();
+    private TransactionStatusBO followingExecution(Payment payment, String userName, LocalDate dayOfExecution) {
+        if (dateCalculator(PRECEDING, LocalDate.now()).isNonWorkingDay(LocalDate.now().minusDays(1)) && !dateCalculator(PRECEDING, LocalDate.now()).isNonWorkingDay(dayOfExecution)) {
+            LocalDate prevBusinessDay = dateCalculator(PRECEDING, LocalDate.now().minusDays(1)).getCurrentBusinessDate();
             IntStream.range(prevBusinessDay.getDayOfMonth(), LocalDate.now().getDayOfMonth() - 1).forEach(i -> txService.bookPayment(payment, LocalDateTime.now(), userName));
         }
         return schedulePayment(payment);
     }
 
-    private TransactionStatusBO precedingExecution(Payment payment, String userName, LocalDate dayOfExecution){
-        LocalDate nextBusinessDay = dateCalculator(FOLLOWING,LocalDate.now().plusDays(1)).getCurrentBusinessDate();
-        if (dateCalculator(FOLLOWING,LocalDate.now()).isNonWorkingDay(LocalDate.now().plusDays(1)) && !dateCalculator(FOLLOWING,LocalDate.now()).isNonWorkingDay(dayOfExecution)){
+    private TransactionStatusBO precedingExecution(Payment payment, String userName, LocalDate dayOfExecution) {
+        LocalDate nextBusinessDay = dateCalculator(FOLLOWING, LocalDate.now().plusDays(1)).getCurrentBusinessDate();
+        if (dateCalculator(FOLLOWING, LocalDate.now()).isNonWorkingDay(LocalDate.now().plusDays(1)) && !dateCalculator(FOLLOWING, LocalDate.now()).isNonWorkingDay(dayOfExecution)) {
             IntStream.range(LocalDate.now().getDayOfMonth() + 1, nextBusinessDay.getDayOfMonth()).forEach(i -> txService.bookPayment(payment, LocalDateTime.now(), userName));
         }
-        payment.setExecutedDate(LocalDateTime.of(nextBusinessDay.minusDays(1),LocalTime.MIN));
+        payment.setExecutedDate(LocalDateTime.of(nextBusinessDay.minusDays(1), LocalTime.MIN));
         return schedulePayment(payment);
     }
 
@@ -154,7 +154,7 @@ public class PaymentExecutionService implements InitializingBean {
                        : ExecutionTimeHolder.getExecutionDate(payment);
     }
 
-    private static LocalDate nextDayOfExecution(Payment payment){
+    private static LocalDate nextDayOfExecution(Payment payment) {
         if (payment.getStartDate().isAfter(payment.getStartDate().withDayOfMonth(payment.getDayOfExecution()))) {
             return payment.getStartDate();
         }
