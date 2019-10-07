@@ -85,8 +85,7 @@ public class PaymentExecutionService implements InitializingBean {
             LocalDate prevBusinessDay = dateCalculator(PRECEDING,LocalDate.now().minusDays(1)).getCurrentBusinessDate();
             IntStream.range(prevBusinessDay.getDayOfMonth(), LocalDate.now().getDayOfMonth() - 1).forEach(i -> txService.bookPayment(payment, LocalDateTime.now(), userName));
         }
-        schedulePayment(payment);
-        return TransactionStatusBO.valueOf(payment.getTransactionStatus().name());
+        return schedulePayment(payment);
     }
 
     private TransactionStatusBO precedingExecution(Payment payment, String userName, LocalDate dayOfExecution){
@@ -95,8 +94,7 @@ public class PaymentExecutionService implements InitializingBean {
             IntStream.range(LocalDate.now().getDayOfMonth() + 1, nextBusinessDay.getDayOfMonth()).forEach(i -> txService.bookPayment(payment, LocalDateTime.now(), userName));
         }
         payment.setExecutedDate(LocalDateTime.of(nextBusinessDay.minusDays(1),LocalTime.MIN));
-        schedulePayment(payment);
-        return TransactionStatusBO.valueOf(payment.getTransactionStatus().name());
+        return schedulePayment(payment);
     }
 
     private TransactionStatusBO updatePaymentStatus(Payment payment, TransactionStatus status) {
