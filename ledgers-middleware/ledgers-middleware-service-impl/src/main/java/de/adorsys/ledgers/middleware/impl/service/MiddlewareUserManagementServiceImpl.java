@@ -6,16 +6,19 @@ import de.adorsys.ledgers.middleware.api.domain.um.AccountAccessTO;
 import de.adorsys.ledgers.middleware.api.domain.um.ScaUserDataTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserRoleTO;
 import de.adorsys.ledgers.middleware.api.domain.um.UserTO;
+import de.adorsys.ledgers.middleware.api.domain.um.PageTO;
+import de.adorsys.ledgers.middleware.api.domain.um.PageableTO;
 import de.adorsys.ledgers.middleware.api.exception.MiddlewareModuleException;
 import de.adorsys.ledgers.middleware.api.service.MiddlewareUserManagementService;
+import de.adorsys.ledgers.middleware.impl.converter.PageMapper;
+import de.adorsys.ledgers.middleware.impl.converter.PageableMapper;
 import de.adorsys.ledgers.middleware.impl.converter.UserMapper;
+import de.adorsys.ledgers.um.api.domain.PageBO;
 import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,8 @@ public class MiddlewareUserManagementServiceImpl implements MiddlewareUserManage
     private final DepositAccountService depositAccountService;
     private final AccessService accessService;
     private final UserMapper userTOMapper = Mappers.getMapper(UserMapper.class);
+    private final PageableMapper pageableMapper;
+    private final PageMapper pageMapper;
 
     @Override
     public UserTO create(UserTO user) {
@@ -92,9 +97,9 @@ public class MiddlewareUserManagementServiceImpl implements MiddlewareUserManage
     }
 
     @Override
-    public Page<UserTO> getUsersByBranchAndRoles(String branch, List<UserRoleTO> roles, Pageable pageable) {
-        return userService.findByBranchAndUserRolesIn(branch, userTOMapper.toUserRoleBO(roles), pageable)
-                       .map(userTOMapper::toUserTO);
+    public PageTO<UserTO> getUsersByBranchAndRoles(String branch, List<UserRoleTO> roles, PageableTO pageable) {
+        PageBO<UserBO> pageBO = userService.findByBranchAndUserRolesIn(branch, userTOMapper.toUserRoleBO(roles), pageableMapper.toPageableBO(pageable));
+        return pageMapper.toPageTO(pageBO);
     }
 
     @Override

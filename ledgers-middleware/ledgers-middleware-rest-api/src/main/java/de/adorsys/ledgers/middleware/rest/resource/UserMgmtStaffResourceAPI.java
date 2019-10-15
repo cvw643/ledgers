@@ -2,7 +2,6 @@ package de.adorsys.ledgers.middleware.rest.resource;
 
 import de.adorsys.ledgers.middleware.api.domain.sca.SCALoginResponseTO;
 import de.adorsys.ledgers.middleware.api.domain.um.*;
-import de.adorsys.ledgers.middleware.rest.utils.CustomPageImpl;
 import io.swagger.annotations.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -98,7 +97,7 @@ public interface UserMgmtStaffResourceAPI {
     })
 
     @GetMapping
-    ResponseEntity<CustomPageImpl<UserTO>> getBranchUsersByRoles(@RequestParam(ROLES) List<UserRoleTO> roles, @RequestParam(PAGE) int page, @RequestParam(SIZE) int size);
+    ResponseEntity<PageTO<UserTO>> getBranchUsersByRoles(@RequestParam(ROLES) List<UserRoleTO> roles, @RequestParam(PAGE) int page, @RequestParam(SIZE) int size);
 
     /**
      * Gets user by ID if it's within the branch

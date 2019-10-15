@@ -17,8 +17,6 @@
 package de.adorsys.ledgers.um.api.service;
 
 import de.adorsys.ledgers.um.api.domain.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -85,7 +83,7 @@ public interface UserService {
      * @param userRoles list of user roles
      * @return List of users filtered by branch and user roles
      */
-    Page<UserBO> findByBranchAndUserRolesIn(String branch, List<UserRoleBO> userRoles, Pageable pageable);
+    PageBO<UserBO> findByBranchAndUserRolesIn(String branch, List<UserRoleBO> userRoles, PageableBO pageable);
 
     /**
      * Counts amount of users for a branch

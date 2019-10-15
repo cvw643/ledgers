@@ -8,7 +8,6 @@ import de.adorsys.ledgers.middleware.api.domain.account.UsageTypeTO;
 import de.adorsys.ledgers.middleware.api.domain.sca.SCALoginResponseTO;
 import de.adorsys.ledgers.middleware.api.domain.um.*;
 import de.adorsys.ledgers.middleware.client.rest.*;
-import de.adorsys.ledgers.middleware.rest.utils.CustomPageImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -134,7 +133,7 @@ public class LedgersClientIT {
         assertThat(accountResponse2.getStatusCode()).isEqualTo(OK);
 
         //Check Users Accesses and Branch Accesses are correct
-        ResponseEntity<CustomPageImpl<UserTO>> allBranchUsersResponse = userMgmtStaffRestClient.getBranchUsersByRoles(Collections.singletonList(CUSTOMER), 0, Integer.MAX_VALUE);
+        ResponseEntity<PageTO<UserTO>> allBranchUsersResponse = userMgmtStaffRestClient.getBranchUsersByRoles(Collections.singletonList(CUSTOMER), 0, Integer.MAX_VALUE);
         checkUsersListAccesses(allBranchUsersResponse, OK, 2, 1);
 
         ResponseEntity<UserTO> branchResponse = userMgmtRestClient.getUser();
@@ -176,9 +175,9 @@ public class LedgersClientIT {
         return access;
     }
 
-    private void checkUsersListAccesses(ResponseEntity<CustomPageImpl<UserTO>> allBranchUsersResponse, HttpStatus expectedStatus, int listSize, int qtyAccesses) {
+    private void checkUsersListAccesses(ResponseEntity<PageTO<UserTO>> allBranchUsersResponse, HttpStatus expectedStatus, int listSize, int qtyAccesses) {
         assertThat(allBranchUsersResponse.getStatusCode()).isEqualTo(expectedStatus);
-        CustomPageImpl<UserTO> usersList = allBranchUsersResponse.getBody();
+        PageTO<UserTO> usersList = allBranchUsersResponse.getBody();
         assertThat(usersList.getTotalElements()).isEqualTo(listSize);
         assertThat(usersList.getContent().stream().allMatch(u -> u.getAccountAccesses().size() == qtyAccesses)).isTrue();
     }

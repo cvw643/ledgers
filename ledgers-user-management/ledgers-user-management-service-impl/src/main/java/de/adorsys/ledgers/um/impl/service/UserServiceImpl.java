@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -160,11 +159,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserBO> findByBranchAndUserRolesIn(String branch, List<UserRoleBO> userRoles, Pageable pageable) {
-        Page<UserBO> users = userRepository.findByBranchAndUserRolesIn(branch, userConverter.toUserRole(userRoles), pageable)
-                                     .map(userConverter::toUserBO);
-        users.forEach(this::decodeStaticTanForUser);
-        return users;
+    public PageBO<UserBO> findByBranchAndUserRolesIn(String branch, List<UserRoleBO> userRoles, PageableBO pageable) {
+        Page<UserBO> page = userRepository.findByBranchAndUserRolesIn(branch, userConverter.toUserRole(userRoles), PageRequest.of(pageable.getPage(), pageable.getSize()))
+                                    .map(userConverter::toUserBO);
+        page.forEach(this::decodeStaticTanForUser);
+        return PageBO.<UserBO>builder()
+                       .content(page.getContent())
+                       .number(page.getNumber())
+                       .size(page.getSize())
+                       .totalElements(page.getTotalElements())
+                       .totalPages(page.getTotalPages())
+                       .build();
     }
 
     @Override
@@ -244,7 +249,7 @@ public class UserServiceImpl implements UserService {
         Optional<UserEntity> user = userRepository.findByEmailOrLogin(userBO.getEmail(), userBO.getLogin());
         if (user.isPresent()) {
             String message = String.format("User with this email or login already exists. Email %s. Login %s.",
-                    userBO.getEmail(), userBO.getLogin());
+                                           userBO.getEmail(), userBO.getLogin());
             log.error(message);
             throw UserManagementModuleException.builder()
                           .errorCode(USER_ALREADY_EXISTS)
