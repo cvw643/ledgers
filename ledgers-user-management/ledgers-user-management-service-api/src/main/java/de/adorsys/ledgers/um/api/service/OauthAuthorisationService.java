@@ -17,4 +17,6 @@ public interface OauthAuthorisationService {
      * @return OauthTokenResponseBO representation of oauth token
      */
     OauthTokenResponseBO oauthToken(String code);
+
+    OauthCodeResponseBO oauthCode(String userId);
 }

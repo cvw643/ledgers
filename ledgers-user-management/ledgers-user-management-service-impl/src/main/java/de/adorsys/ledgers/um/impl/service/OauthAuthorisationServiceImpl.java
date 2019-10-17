@@ -5,7 +5,6 @@ import de.adorsys.ledgers.um.api.domain.TokenUsageBO;
 import de.adorsys.ledgers.um.api.domain.UserBO;
 import de.adorsys.ledgers.um.api.domain.oauth.OauthCodeResponseBO;
 import de.adorsys.ledgers.um.api.domain.oauth.OauthTokenResponseBO;
-import de.adorsys.ledgers.util.exception.UserManagementModuleException;
 import de.adorsys.ledgers.um.api.service.OauthAuthorisationService;
 import de.adorsys.ledgers.um.api.service.UserService;
 import de.adorsys.ledgers.um.db.domain.OauthCodeEntity;
@@ -13,6 +12,7 @@ import de.adorsys.ledgers.um.db.domain.UserRole;
 import de.adorsys.ledgers.um.db.repository.OauthCodeRepository;
 import de.adorsys.ledgers.util.Ids;
 import de.adorsys.ledgers.util.PasswordEnc;
+import de.adorsys.ledgers.util.exception.UserManagementModuleException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -54,7 +54,18 @@ public class OauthAuthorisationServiceImpl implements OauthAuthorisationService 
                           .devMsg("Invalid credentials")
                           .build();
         }
+        return resolveOauthCode(user);
+    }
 
+    @Override
+    @Transactional
+    public OauthCodeResponseBO oauthCode(String userId) {
+        UserBO user = userService.findById(userId);
+
+        return resolveOauthCode(user);
+    }
+
+    private OauthCodeResponseBO resolveOauthCode(UserBO user) {
         OffsetDateTime expiryTime = OffsetDateTime.now()
                                             .plusMinutes(authCodeLifeTime);
 
@@ -89,7 +100,7 @@ public class OauthAuthorisationServiceImpl implements OauthAuthorisationService 
         Date expires = DateUtils.addMinutes(issueTime, accessTokenLifeTime);
 
         BearerTokenBO token = bearerTokenService.bearerToken(user.getId(), user.getLogin(),
-                                                             null, null, UserRole.CUSTOMER, scaIdParam, scaIdParam, issueTime, expires, TokenUsageBO.LOGIN, null);
+                null, null, UserRole.CUSTOMER, scaIdParam, scaIdParam, issueTime, expires, TokenUsageBO.LOGIN, null);
         return new OauthTokenResponseBO(token);
     }
 }
