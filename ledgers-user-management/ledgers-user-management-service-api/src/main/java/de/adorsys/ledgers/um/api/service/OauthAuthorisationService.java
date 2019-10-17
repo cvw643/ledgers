@@ -23,4 +23,6 @@ public interface OauthAuthorisationService {
      * @return OauthServerInfoBO Authorization server metadata request
      */
     OauthServerInfoBO oauthServerInfo();
+
+    OauthCodeResponseBO oauthCode(String userId);
 }
