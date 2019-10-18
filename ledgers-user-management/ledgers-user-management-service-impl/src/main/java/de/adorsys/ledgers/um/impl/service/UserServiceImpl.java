@@ -160,8 +160,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserBO> findByBranchAndUserRolesIn(String branch, List<UserRoleBO> userRoles, String loginSearchParam, Pageable pageable) {
-        Page<UserBO> users = userRepository.findByBranchAndRoleAndPartialLogin(branch, userConverter.toUserRole(userRoles), loginSearchParam, pageable)
+    public Page<UserBO> findByBranchAndUserRolesIn(String branch, List<UserRoleBO> userRoles, String queryParam, Pageable pageable) {
+        Page<UserBO> users = userRepository.findByBranchAndUserRolesInAndLoginContaining(branch, userConverter.toUserRole(userRoles), queryParam, pageable)
                                      .map(userConverter::toUserBO);
         users.forEach(this::decodeStaticTanForUser);
         return users;

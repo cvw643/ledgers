@@ -61,8 +61,8 @@ public interface UserRepository extends PagingAndSortingRepository<UserEntity, S
      * @param roles  user roles
      * @return list pf users
      */
-    @Query("select distinct u from UserEntity u join u.userRoles r where branch = ?1 and r in ?2 and login like concat('%',?3,'%')")
-    Page<UserEntity> findByBranchAndRoleAndPartialLogin(String branch, List<UserRole> roles, String loginSearchParam, Pageable pageable);
+    //@Query("select distinct u from UserEntity u join u.userRoles r where branch = ?1 and r in ?2 and login like concat('%',?3,'%')")
+    Page<UserEntity> findByBranchAndUserRolesInAndLoginContaining(String branch, List<UserRole> roles, String queryParam, Pageable pageable);
 
     /**
      * Counts amount of users for a branch
